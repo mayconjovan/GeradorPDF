@@ -13,12 +13,17 @@ import java.util.Date;
  */
 public class FiltrosParametros {
     
-    public int agrupamento, qtdeValor, custo, faturamento, nivel;
+    public int agrupamento, qtdeValor, custo, faturamento, nivel, venda_faturamento;
     public String consideraCancelados;
     public float percPis, percCofins, curvaA, curvaB;
+    
+    //parametros localizados no Where do Sql
+     
+    
    // public Date termino;
 
-    public FiltrosParametros(int agrupamento, int qtdeValor, int custo, int faturamento, int nivel, String consideraCancelados, float percPis, float percConfins, float curvaA, float curvaB/*, Date termino*/) {
+    public FiltrosParametros(int venda_faturamento, int agrupamento, int qtdeValor, int custo, int faturamento, int nivel, String consideraCancelados, float percPis, float percConfins, float curvaA, float curvaB/*, Date termino*/) {
+        this.venda_faturamento = venda_faturamento;
         this.agrupamento = agrupamento;
         this.qtdeValor = qtdeValor;
         this.custo = custo;

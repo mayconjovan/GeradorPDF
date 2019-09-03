@@ -106,7 +106,7 @@ public class GeradorPdfRelatorio extends PdfPageEventHelper {
             throws IOException, DocumentException {
 
         Date data = new Date();
-        FiltrosParametros filtros = new FiltrosParametros(2, 1, 1, 1, 99, "S", 999.99f, 999.99f, 10f, 60f/*, data*/);
+        FiltrosParametros filtros = new FiltrosParametros(2, 2, 1, 1, 1, 99, "S", 999.99f, 999.99f, 10f, 60f/*, data*/);
 
         ArrayList<ConstrutorView> a = ViewDAO.buscarDados(filtros);
         int i = 0;
@@ -114,12 +114,12 @@ public class GeradorPdfRelatorio extends PdfPageEventHelper {
         for (ConstrutorView a1 : a) {
             i++;
 
-            PdfPCell b1 = new PdfPCell(new Paragraph(i + "  ", DEFAULT_BOLD));
+            PdfPCell b1 = new PdfPCell(new Paragraph(i + " ", DEFAULT_BOLD));
             b1.setBorder(0);
             b1.setFixedHeight(15f);
             tc.addCell(b1);
 
-            PdfPCell b2 = new PdfPCell(new Paragraph(a1.AGRUPAMENTO_2 + " TESTE" + a1.DESCRICAO_AGRUPAMENTO2, DEFAULT_BOLD));
+            PdfPCell b2 = new PdfPCell(new Paragraph(a1.AGRUPAMENTO_2 + " " + a1.DESCRICAO_AGRUPAMENTO2, DEFAULT_BOLD));
             b2.setBorder(0);
             tc.addCell(b2);
 
@@ -127,72 +127,72 @@ public class GeradorPdfRelatorio extends PdfPageEventHelper {
             b3.setBorder(0);
             tc.addCell(b3);
 
-            PdfPCell b4 = new PdfPCell(new Paragraph(a1.MES02 + "" + a1.CURVAMES02, DEFAULT_BOLD));
+            PdfPCell b4 = new PdfPCell(new Paragraph(a1.MES02 + " " + a1.CURVAMES02, DEFAULT_BOLD));
             b4.setBorder(0);
             tc.addCell(b4);
 
-            PdfPCell b5 = new PdfPCell(new Paragraph(a1.MES03 + "" + a1.CURVAMES03, DEFAULT_BOLD));
+            PdfPCell b5 = new PdfPCell(new Paragraph(a1.MES03 + " " + a1.CURVAMES03, DEFAULT_BOLD));
             b5.setBorder(0);
             tc.addCell(b5);
 
-            PdfPCell b6 = new PdfPCell(new Paragraph(a1.MES04 + "" + a1.CURVAMES04, DEFAULT_BOLD));
+            PdfPCell b6 = new PdfPCell(new Paragraph(a1.MES04 + " " + a1.CURVAMES04, DEFAULT_BOLD));
             b6.setBorder(0);
             tc.addCell(b6);
 
-            PdfPCell b7 = new PdfPCell(new Paragraph(a1.MES05 + "" + a1.CURVAMES05, DEFAULT_BOLD));
+            PdfPCell b7 = new PdfPCell(new Paragraph(a1.MES05 + " " + a1.CURVAMES05, DEFAULT_BOLD));
             b7.setBorder(0);
             tc.addCell(b7);
 
-            PdfPCell b8 = new PdfPCell(new Paragraph(a1.MES06 + "" + a1.CURVAMES06, DEFAULT_BOLD));
+            PdfPCell b8 = new PdfPCell(new Paragraph(a1.MES06 + " " + a1.CURVAMES06, DEFAULT_BOLD));
             b8.setBorder(0);
             tc.addCell(b8);
 
-            PdfPCell b9 = new PdfPCell(new Paragraph(a1.MES07 + "" + a1.CURVAMES07, DEFAULT_BOLD));
+            PdfPCell b9 = new PdfPCell(new Paragraph(a1.MES07 + " " + a1.CURVAMES07, DEFAULT_BOLD));
             b9.setBorder(0);
             tc.addCell(b9);
 
-            PdfPCell b10 = new PdfPCell(new Paragraph(a1.MES08 + "" + a1.CURVAMES08, DEFAULT_BOLD));
+            PdfPCell b10 = new PdfPCell(new Paragraph(a1.MES08 + " " + a1.CURVAMES08, DEFAULT_BOLD));
             b10.setBorder(0);
             tc.addCell(b10);
 
-            PdfPCell b11 = new PdfPCell(new Paragraph(a1.MES09 + "" + a1.CURVAMES09, DEFAULT_BOLD));
+            PdfPCell b11 = new PdfPCell(new Paragraph(a1.MES09 + " " + a1.CURVAMES09, DEFAULT_BOLD));
             b11.setBorder(0);
             tc.addCell(b11);
 
-            PdfPCell b12 = new PdfPCell(new Paragraph(a1.MES10 + "" + a1.CURVAMES10, DEFAULT_BOLD));
+            PdfPCell b12 = new PdfPCell(new Paragraph(a1.MES10 + " " + a1.CURVAMES10, DEFAULT_BOLD));
             b12.setBorder(0);
             tc.addCell(b12);
 
-            PdfPCell b13 = new PdfPCell(new Paragraph(a1.MES11 + "" + a1.CURVAMES11, DEFAULT_BOLD));
+            PdfPCell b13 = new PdfPCell(new Paragraph(a1.MES11 + " " + a1.CURVAMES11, DEFAULT_BOLD));
             b13.setBorder(0);
             tc.addCell(b13);
 
-            PdfPCell b14 = new PdfPCell(new Paragraph(a1.MES12 + "" + a1.CURVAMES12, DEFAULT_BOLD));
+            PdfPCell b14 = new PdfPCell(new Paragraph(a1.MES12 + " " + a1.CURVAMES12, DEFAULT_BOLD));
             b14.setBorder(0);
             tc.addCell(b14);
 
-            PdfPCell b15 = new PdfPCell(new Paragraph(a1.MES13 + "" + a1.CURVAMES13, DEFAULT_BOLD));
+            PdfPCell b15 = new PdfPCell(new Paragraph(a1.MES13 + " " + a1.CURVAMES13, DEFAULT_BOLD));
             b15.setBorder(0);
             tc.addCell(b15);
 
-            PdfPCell b16 = new PdfPCell(new Phrase(a1.VENDIDO + "", DEFAULT_BOLD));
+            PdfPCell b16 = new PdfPCell(new Phrase(a1.VENDIDO + " ", DEFAULT_BOLD));
             b16.setBorder(0);
             tc.addCell(b16);
 
-            PdfPCell b17 = new PdfPCell(new Phrase(a1.PARTICIPACAO_GERAL + "", DEFAULT_BOLD));
+            PdfPCell b17 = new PdfPCell(new Phrase(a1.PARTICIPACAO_GERAL + " ", DEFAULT_BOLD));
             b17.setBorder(0);
             tc.addCell(b17);
 
-            PdfPCell b18 = new PdfPCell(new Phrase(a1.MEDIA + "", DEFAULT_BOLD));
+            PdfPCell b18 = new PdfPCell(new Phrase(a1.MEDIA + " ", DEFAULT_BOLD));
             b18.setBorder(0);
             tc.addCell(b18);
 
-            PdfPCell b19 = new PdfPCell(new Phrase(a1.ACUM_PARTICIPACAO_GERAL + "", DEFAULT_BOLD));
+            PdfPCell b19 = new PdfPCell(new Phrase(a1.ACUM_PARTICIPACAO_GERAL + " ", DEFAULT_BOLD));
             b19.setBorder(0);
 
             tc.addCell(b19);
 
-            PdfPCell b20 = new PdfPCell(new Phrase(a1.CURVAGERAL + "", DEFAULT_BOLD));
+            PdfPCell b20 = new PdfPCell(new Phrase(a1.CURVAGERAL + " ", DEFAULT_BOLD));
             b20.setBorder(0);
             tc.addCell(b20);
         }
