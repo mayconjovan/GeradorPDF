@@ -14,7 +14,7 @@ import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
-import br.com.intersys.systextil.global.Mdi;
+//import br.com.intersys.systextil.global.Mdi;
 import com.lowagie.text.Element;
 import com.lowagie.text.pdf.ColumnText;
 import com.lowagie.text.pdf.PdfPageEventHelper;
@@ -45,7 +45,7 @@ public class GeradorPdfRelatorio extends PdfPageEventHelper {
     //public static final Font GROUP_HEADER = FontFactory.getFont("Verdana", 6, Font.BOLD, GROUP_BLUE);
     public static final Font SETTINGS_LABEL = FontFactory.getFont("Verdana", 5, Font.BOLD);
 
-    public static Mdi mdi;
+  //  public static Mdi mdi;
 
     @Override
     public void onStartPage(PdfWriter writer, Document document) {
@@ -123,7 +123,7 @@ public class GeradorPdfRelatorio extends PdfPageEventHelper {
             b2.setBorder(0);
             tc.addCell(b2);
 
-            PdfPCell b3 = new PdfPCell(new Paragraph(a1.MES01 + "" + a1.CURVAMES01, DEFAULT_BOLD));
+            PdfPCell b3 = new PdfPCell(new Paragraph(a1.MES01 + " " + a1.CURVAMES01, DEFAULT_BOLD));
             b3.setBorder(0);
             tc.addCell(b3);
 
