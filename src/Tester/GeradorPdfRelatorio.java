@@ -114,7 +114,7 @@ public class GeradorPdfRelatorio extends PdfPageEventHelper {
         for (ConstrutorView a1 : a) {
             i++;
 
-            PdfPCell b1 = new PdfPCell(new Paragraph(i + "", DEFAULT_BOLD));
+            PdfPCell b1 = new PdfPCell(new Paragraph(i + "  ", DEFAULT_BOLD));
             b1.setBorder(0);
             b1.setFixedHeight(15f);
             tc.addCell(b1);
