@@ -1,5 +1,4 @@
-package Utils;
-
+package systextil.bo.geradorpdfcurvaabc;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -11,15 +10,17 @@ import java.util.logging.Logger;
 public class ConnectionFactory {
 
     private static final String DRIVER = "oracle.jdbc.driver.OracleDriver";
-    private static final String URL = "jdbc:oracle:thin:";
-    private static final String USER = "";
-    private static final String PASS = "";
+    private static final String URL = "jdbc:oracle:thin:@189.20.65.227:1522:ttsystex";
+    private static final String USER = "systextil";
+    private static final String PASS = "oracle";
 
     public static Connection getConnetion() {
         try {
             Class.forName(DRIVER);
             return DriverManager.getConnection(URL, USER, PASS);
-        } catch (ClassNotFoundException | SQLException ex) {
+        } catch (ClassNotFoundException  ex) {
+            throw new RuntimeException("Falha na conexão com BD: ", ex);
+        }catch( SQLException ex){
             throw new RuntimeException("Falha na conexão com BD: ", ex);
         }
     }

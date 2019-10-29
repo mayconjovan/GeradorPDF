@@ -1,9 +1,9 @@
+package systextil.bo.geradorpdfcurvaabc;
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package Domain;
 
 /**
  *
@@ -28,5 +28,9 @@ public class CalculoCurvaAbc {
             v_curva = "";
         }
         return v_curva;
+    }
+
+    public String calculoAbc(int aInt, float aFloat, float aFloat0, float curvaA) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
