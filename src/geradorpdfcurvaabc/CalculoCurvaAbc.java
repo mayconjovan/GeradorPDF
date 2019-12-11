@@ -15,10 +15,10 @@ public class CalculoCurvaAbc {
         String v_curva = "";
 
         if (mes > 0) {
-            if (p_participacao > 0 && (p_participacao - p_acumulado) <= p_curva_a) {
+            if (p_participacao > 0 && (p_participacao - p_acumulado) < p_curva_a) {
                 v_curva = "A";
 
-            } else if (((p_participacao - p_acumulado) > p_curva_a) && ((p_participacao - p_acumulado) <= p_curva_b)) {
+            } else if (((p_participacao - p_acumulado) > p_curva_a) && ((p_participacao - p_acumulado) < p_curva_b)) {
                 v_curva = "B";
 
             } else {

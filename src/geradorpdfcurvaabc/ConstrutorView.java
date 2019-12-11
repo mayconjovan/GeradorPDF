@@ -21,7 +21,7 @@ public class ConstrutorView {
             CURVAGERAL;
 
     public int MES01, MES02, MES03, MES04, MES05, MES06,
-            MES07, MES08, MES09, MES10, MES11, MES12, MES13;
+            MES07, MES08, MES09, MES10, MES11, MES12, MES13, margem;
 
     public float PART_GR1, ACU_GR1, CMV,
             CMV_GERAL, CMV_PARTICIPACAO_GERAL, ACUM_CMV_PARTICIPACAO_GERAL,
@@ -176,7 +176,14 @@ public class ConstrutorView {
         this.ACUM_GR1_MES13 = ACUM_GR1_MES13;
     }
 
-   
+    public int getMargem() {
+        return margem;
+    }
+
+    public void setMargem(int margem) {
+        this.margem = margem;
+    }
+
     public String getAGRUPAMENTO_1() {
         return AGRUPAMENTO_1;
     }

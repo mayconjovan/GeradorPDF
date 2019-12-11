@@ -2,184 +2,46 @@ package systextil.bo.geradorpdfcurvaabc;
 
 import com.lowagie.text.*;
 import com.lowagie.text.Font;
-import com.lowagie.text.Image;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.*;
 
-import java.awt.*;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 
-public class LayoutRepresentanteECliente extends PdfPageEventHelper implements EstruturaPDF {
+public class LayoutTipoDois extends PdfPageEventHelper implements EstruturaPDF {
 
     private static List<Integer> arrTotaisCurva = null;
     private static List<Integer> arrTotalNumeroClientes = null;
     private static List<Integer> arrTotalGeral = null;
     private static FiltrosParametros filtrosParametros;
-    private final static MetodosUtils metodosUtils = new MetodosUtils();
+    private static boolean controleTotalGeral = true;
 
+    public static boolean isControleTotalGeral() {
+        return controleTotalGeral;
+    }
+
+    public static void setControleTotalGeral(boolean controleTotalGeral) {
+        LayoutTipoDois.controleTotalGeral = controleTotalGeral;
+    }
+
+    
     @Override
     public void onStartPage(PdfWriter writer, Document document) {
-        Date dataHora = new Date();
-        SimpleDateFormat df;
-        SimpleDateFormat hf;
-        df = new SimpleDateFormat("dd/MM/yyyy");
-        hf = new SimpleDateFormat("HH:mm:ss");
-
-        String aux = null;
-        try {
-             aux =  new String("MODULO: ADMINISTRAÃ‡ÃƒO DE VENDAS".getBytes("ISO-8859-2"));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        ColumnText.showTextAligned(writer.getDirectContent(),
-                Element.ALIGN_LEFT,
-                new Phrase("EMPRESA: " + filtrosParametros.getMdi().nome_empresa,
-                        Fontes.getTitle()), 15, 575, 0);
-        String completaTitulo = metodosUtils.retornaTipoVendaFaturamento(filtrosParametros.getVenda_faturamento());
-        completaTitulo = completaTitulo.replace("1", "");
-        completaTitulo = completaTitulo.replace("2", "");
-        completaTitulo = completaTitulo.replace("-", "");
-        completaTitulo = completaTitulo.replace(" ", "");
-        ColumnText.showTextAligned(writer.getDirectContent(),
-                Element.ALIGN_LEFT,
-                new Phrase("PROGRAMA: CURVA ABC DE " + completaTitulo,
-                        Fontes.getTitle()), 15, 560, 0);
-        ColumnText.showTextAligned(writer.getDirectContent(),
-                Element.ALIGN_CENTER,
-                new Phrase(aux,
-                        Fontes.getTitle()), 420, 575, 0);
-        ColumnText.showTextAligned(writer.getDirectContent(),
-                Element.ALIGN_CENTER,
-                new Phrase(df.format(dataHora) + " - " + hf.format(dataHora) + " - Pagina: " + document.getPageNumber(),
-                        Fontes.getTitle()), 770, 575, 0);
-        ColumnText.showTextAligned(writer.getDirectContent(),
-                Element.ALIGN_LEFT,
-                new Phrase("____________________________________________________"
-                        + "_______________________________________________________________________________________________________________________________"
-                        + "_________________________________",
-                        Fontes.getLinered()), 10, 551, 0);
-        ColumnText.showTextAligned(writer.getDirectContent(),
-                Element.ALIGN_LEFT,
-                new Phrase("____________________________________________________"
-                        + "_______________________________________________________________________________________________________________________________"
-                        + "_________________________________",
-                        Fontes.getLinered()), 10, 550, 0);
-        ColumnText.showTextAligned(writer.getDirectContent(),
-                Element.ALIGN_LEFT,
-                new Phrase("____________________________________________________"
-                        + "_______________________________________________________________________________________________________________________________"
-                        + "_________________________________",
-                        Fontes.getLineredGray()), 10, 549, 0);
-        ColumnText.showTextAligned(writer.getDirectContent(),
-                Element.ALIGN_LEFT,
-                new Phrase("____________________________________________________"
-                        + "_______________________________________________________________________________________________________________________________"
-                        + "_________________________________",
-                        Fontes.getLineredGray()), 10, 548, 0);
-        ColumnText.showTextAligned(writer.getDirectContent(),
-                Element.ALIGN_LEFT,
-                new Phrase("VENDAS/FATURAMENTO: " + metodosUtils.retornaTipoVendaFaturamento(filtrosParametros.getVenda_faturamento()),
-                        Fontes.getHeaderDefaultBold()), 15, 539, 0);
-        ColumnText.showTextAligned(writer.getDirectContent(),
-                Paragraph.ALIGN_LEFT,
-                new Phrase("PERï¿½ODO: " + metodosUtils.retornaPerido(filtrosParametros.getDataInicial(), filtrosParametros.getDataFinal()),
-                        Fontes.getHeaderDefaultBold()), 210, 539, 0);
-        try {
-            ColumnText.showTextAligned(writer.getDirectContent(),
-                    Paragraph.ALIGN_LEFT,
-                    new Phrase("DIVISï¿½O: " + metodosUtils.retornaDivisao(filtrosParametros.getNivel()),
-                            Fontes.getHeaderDefaultBold()), 330, 539, 0);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        ColumnText.showTextAligned(writer.getDirectContent(),
-                Paragraph.ALIGN_LEFT,
-                new Phrase("TIPO NOTA/PEDIDO: " + metodosUtils.retornaTipoNotaProdutos(filtrosParametros.getFaturamento()),
-                        Fontes.getHeaderDefaultBold()), 440, 539, 0);
-        ColumnText.showTextAligned(writer.getDirectContent(),
-                Paragraph.ALIGN_LEFT,
-                new Phrase("CONSIDERA CANCELADOS: " + metodosUtils.retornaConsideraCancelado(filtrosParametros.getConsideraCancelados()),
-                        Fontes.getHeaderDefaultBold()), 580, 539, 0);
-        ColumnText.showTextAligned(writer.getDirectContent(),
-                Paragraph.ALIGN_LEFT,
-                new Phrase(metodosUtils.retornaOpcaoRelatorio(filtrosParametros.getAgrupamento()),
-                        Fontes.getHeaderDefaultBold()), 700, 539, 0);
-        ColumnText.showTextAligned(writer.getDirectContent(),
-                Paragraph.ALIGN_LEFT,
-                new Phrase(metodosUtils.retornaOpcaoRelatorio(filtrosParametros.getAgrupamento()),
-                        Fontes.getHeaderDefaultBold()), 700, 539, 0);
-        ColumnText.showTextAligned(writer.getDirectContent(),
-                Paragraph.ALIGN_LEFT,
-                new Phrase("CURVA A ATï¿½: " + filtrosParametros.getCurvaA() + " - CURVA B ATï¿½" + filtrosParametros.getCurvaB() + " - CURVA C ATï¿½ - 35.00",
-                        Fontes.getHeaderDefaultBold()), 15, 530, 0);
-        ColumnText.showTextAligned(writer.getDirectContent(),
-                Paragraph.ALIGN_LEFT,
-                new Phrase("QTDE/VALOR: " + metodosUtils.retornaQuantidadeOuValor(filtrosParametros.getQtdeValor()),
-                        Fontes.getHeaderDefaultBold()), 390, 530, 0);
-        ColumnText.showTextAligned(writer.getDirectContent(),
-                Paragraph.ALIGN_LEFT,
-                new Phrase("____________________________________________________"
-                        + "_______________________________________________________________________________________________________________________________"
-                        + "_________________________________",
-                        Fontes.getHeaderDefaultBold()), 10, 526, 0);
+        MetodosUtils.headerPDF(document, writer, filtrosParametros);
     }
 
     @Override
     public void onEndPage(PdfWriter writer, Document document) {
-
-        ColumnText.showTextAligned(writer.getDirectContent(),
-                Paragraph.ALIGN_LEFT,
-                new Phrase("____________________________________________________"
-                        + "_______________________________________________________________________________________________________________________________"
-                        + "_________________________________",
-                        Fontes.getLinered()), 10, 41, 0);
-        ColumnText.showTextAligned(writer.getDirectContent(),
-                Paragraph.ALIGN_LEFT,
-                new Phrase("____________________________________________________"
-                        + "_______________________________________________________________________________________________________________________________"
-                        + "_________________________________",
-                        Fontes.getLinered()), 10, 40, 0);
-        ColumnText.showTextAligned(writer.getDirectContent(),
-                Paragraph.ALIGN_LEFT,
-                new Phrase("____________________________________________________"
-                        + "_______________________________________________________________________________________________________________________________"
-                        + "_________________________________", Fontes.getLineredGray()), 10, 39, 0);
-        ColumnText.showTextAligned(writer.getDirectContent(),
-                Paragraph.ALIGN_LEFT,
-                new Phrase("____________________________________________________"
-                        + "_______________________________________________________________________________________________________________________________"
-                        + "_________________________________", Fontes.getLineredGray()), 10, 38, 0);
-
-        ColumnText.showTextAligned(writer.getDirectContent(),
-                Paragraph.ALIGN_LEFT,
-                new Phrase("Programa: PEDI_E015", Fontes.getMinFontGray()), 10, 20, 0);
-        ColumnText.showTextAligned(writer.getDirectContent(),
-                Paragraph.ALIGN_LEFT,
-                new Phrase("Layout: ", Fontes.getMinFontGray()), 10, 13, 0);
-        Image image = null;
-        try {
-            image = Image.getInstance("C:\\Systextil\\App\\SystextilWeb\\imagens\\logosystextil.png");
-            image.setAlignment(Paragraph.ALIGN_RIGHT);
-            image.setAbsolutePosition(750, 12);
-            image.scalePercent(6f, 6f);
-            writer.getDirectContent().addImage(image, true);
-        } catch (DocumentException | IOException err) {
-            err.printStackTrace();
-        }
+        MetodosUtils.footerPDF(document, writer);
     }
 
     @Override
     public void body(Document document, final List<ConstrutorView> agrupamentos) {
-        PdfPTable tabela = new PdfPTable(new float[]{5f, 75f, 15f, 15f, 15f,
-                15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 8f, 15f,
-                15f, 11f});
+        PdfPTable tabela = new PdfPTable(new float[]{7f, 75f, 15f, 15f, 15f,
+                15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 8f, 18f,
+                11f, 11f});
         tabela.setWidthPercentage(100);
 
         List<String> arrAgrupamento1 = new ArrayList<String>();
@@ -288,26 +150,28 @@ public class LayoutRepresentanteECliente extends PdfPageEventHelper implements E
         arrTotalGeral = new ArrayList<Integer>() {
             {
                 add((int) agrupamentos.get(0).GERAL_MES01);
-                add((int) agrupamentos.get(1).GERAL_MES02);
-                add((int) agrupamentos.get(2).GERAL_MES03);
-                add((int) agrupamentos.get(3).GERAL_MES04);
-                add((int) agrupamentos.get(4).GERAL_MES05);
-                add((int) agrupamentos.get(5).GERAL_MES06);
-                add((int) agrupamentos.get(6).GERAL_MES07);
-                add((int) agrupamentos.get(7).GERAL_MES08);
-                add((int) agrupamentos.get(8).GERAL_MES09);
-                add((int) agrupamentos.get(9).GERAL_MES10);
-                add((int) agrupamentos.get(10).GERAL_MES11);
-                add((int) agrupamentos.get(11).GERAL_MES12);
-                add((int) agrupamentos.get(12).GERAL_MES12);
-                add((int) agrupamentos.get(12).VENDIDO_GERAL);
+                add((int) agrupamentos.get(0).GERAL_MES02);
+                add((int) agrupamentos.get(0).GERAL_MES03);
+                add((int) agrupamentos.get(0).GERAL_MES04);
+                add((int) agrupamentos.get(0).GERAL_MES05);
+                add((int) agrupamentos.get(0).GERAL_MES06);
+                add((int) agrupamentos.get(0).GERAL_MES07);
+                add((int) agrupamentos.get(0).GERAL_MES08);
+                add((int) agrupamentos.get(0).GERAL_MES09);
+                add((int) agrupamentos.get(0).GERAL_MES10);
+                add((int) agrupamentos.get(0).GERAL_MES11);
+                add((int) agrupamentos.get(0).GERAL_MES12);
+                add((int) agrupamentos.get(0).GERAL_MES12);
+                add((int) agrupamentos.get(0).VENDIDO_GERAL);
             }
         };
 
         montaLinhaTotalCurva(arrTotaisCurva, tabela, 1, 0);
         montaLinhaTotalCurva(arrTotalNumeroClientes, tabela, 1, 1);
         montaLinhaTotalCurva(arrTotais, tabela, 2, 2);
-        montaLinhaTotalCurva(arrTotalGeral, tabela, 0, 3);
+        if(controleTotalGeral){
+            montaLinhaTotalCurva(arrTotalGeral, tabela, 0, 3);
+        }
 
         try {
             document.add(tabela);
@@ -322,11 +186,9 @@ public class LayoutRepresentanteECliente extends PdfPageEventHelper implements E
         for (int h = 0; h < 20; h++) {
             Paragraph phrase = null;
             PdfPCell cell = new PdfPCell();
-            cell.setFixedHeight(13f);
+            cell.setFixedHeight(10f);
             cell.setBorder(0);
             cell.setPadding(0);
-            cell.setPaddingTop(1);
-            cell.setPaddingBottom(2);
             cell.setBorder(bordas);
             cell.setBorderWidth(1.5f);
 
@@ -414,7 +276,7 @@ public class LayoutRepresentanteECliente extends PdfPageEventHelper implements E
                     cell.setHorizontalAlignment(1);
                     break;
                 case 16:
-                    phrase = new Paragraph(new Phrase("" + obj.PARTICIPACAO_GERAL + " " + obj.CURVAMES13, Fontes.getHeaderTableDefaultBold()));
+                    phrase = new Paragraph(new Phrase("" + obj.PARTICIPACAO_GERAL + "", Fontes.getHeaderTableDefaultBold()));
                     cell.addElement(phrase);
                     cell.setPaddingRight(1);
                     cell.setHorizontalAlignment(1);
@@ -468,9 +330,12 @@ public class LayoutRepresentanteECliente extends PdfPageEventHelper implements E
         String texto = null;
         int paddingTop = 0;
         Font fonte = null;
+       
+        PdfPCell cell = null;
+        Paragraph phrase = null;
         for (int h = 0; h < 20; h++) {
-            Paragraph phrase = null;
-            PdfPCell cell = new PdfPCell();
+            phrase = null;
+            cell = new PdfPCell();
             cell.setFixedHeight(13f);
             cell.setBorder(0);
             cell.setPadding(0);
@@ -488,7 +353,11 @@ public class LayoutRepresentanteECliente extends PdfPageEventHelper implements E
                                 texto = "TOTAL CURVA";
                                 break;
                             case 1:
-                                texto = "Nï¿½MERO CLIENTES";
+                                if(filtrosParametros.getAgrupamento() == 7){
+                                    texto = "NÚMERO PRODUTOS";
+                                }else{
+                                    texto = "NÚMERO CLIENTES";
+                                }
                                 break;
                             case 2:
                                 texto = "TOTAIS..............:";
@@ -594,9 +463,17 @@ public class LayoutRepresentanteECliente extends PdfPageEventHelper implements E
             }
         };
 
-        if(filtrosParametros.getAgrupamento() != 10) {
-            headers.add("REPRESENTANTE: " + construtorView.AGRUPAMENTO_1 + " " + " " + construtorView.DESCRICAO_AGRUPAMENTO1);
-
+        switch (filtrosParametros.getAgrupamento()) {
+            case 5:
+            case 3:
+                headers.add("PRODUTO: " + construtorView.AGRUPAMENTO_1 + " " + " " + construtorView.DESCRICAO_AGRUPAMENTO1);
+            break;
+            case 7:
+                headers.add("CLIENTE: " + construtorView.AGRUPAMENTO_1 + " " + " " + construtorView.DESCRICAO_AGRUPAMENTO1);
+            default:
+                headers.add("REPRESENTANTE: " + construtorView.AGRUPAMENTO_1 + " " + " " + construtorView.DESCRICAO_AGRUPAMENTO1);
+                break;
+        }
         /*
             Adiciona uma celula em branco
          */
@@ -613,7 +490,7 @@ public class LayoutRepresentanteECliente extends PdfPageEventHelper implements E
             paragraph = new Paragraph(new Phrase(headers.get(1), Fontes.getHeaderTableBold()));
             cell = new PdfPCell(paragraph);
             cell.setBorder(0);
-            cell.setPaddingLeft(-9.3f);
+            cell.setPaddingLeft(-13f);
             cell.setPaddingBottom(-30f);
             cell.setPaddingTop(10f);
             cell.setHorizontalAlignment(0);
@@ -626,13 +503,13 @@ public class LayoutRepresentanteECliente extends PdfPageEventHelper implements E
                 cell.setBorder(0);
                 tabela.addCell(cell);
             }
-        }
+
 
         for(int i=0;i<15;i++){
             paragraph = new Paragraph(new Phrase("     ", Fontes.getHeaderTableDefaultBold()));
             cell = new PdfPCell(paragraph);
             cell.setBorder(0);
-            cell.setFixedHeight(10);
+            cell.setFixedHeight(10f);
             tabela.addCell(cell);
         }
 
@@ -641,7 +518,8 @@ public class LayoutRepresentanteECliente extends PdfPageEventHelper implements E
         cell.setColspan(6);
         cell.setBorder(0);
         cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-        cell.setPaddingTop(18f);
+        cell.setPaddingTop(22f);
+        cell.setPaddingBottom(2f);
         tabela.addCell(cell);
 
         headers = new ArrayList<String>() {
@@ -650,22 +528,25 @@ public class LayoutRepresentanteECliente extends PdfPageEventHelper implements E
             }
         };
 
-        if(filtrosParametros.getAgrupamento() == 2){
+        if(filtrosParametros.getAgrupamento() == 2 || filtrosParametros.getAgrupamento() == 5){
             headers.add("CLIENTES");
         }else if(filtrosParametros.getAgrupamento() == 6
-                || filtrosParametros.getAgrupamento() == 10){
+                || filtrosParametros.getAgrupamento() == 10
+                || filtrosParametros.getAgrupamento() == 7){
             headers.add("PRODUTOS");
+        }else if(filtrosParametros.getAgrupamento() == 3){
+            headers.add("REPRESENTANTES");
         }
 
         MetodosUtils.getMeses(headers, filtrosParametros.getDataFinal());
 
-        if(metodosUtils.retornaQuantidadeOuValor(filtrosParametros.getQtdeValor()).equals("QUANTIDADE")){
+        if(MetodosUtils.retornaQuantidadeOuValor(filtrosParametros.getQtdeValor()).equals("QUANTIDADE")){
             headers.add("QTDE");
         }else{
             headers.add("VALOR");
         }
         headers.add("%");
-        headers.add("Mï¿½DIA");
+        headers.add("MÉDIA");
         headers.add("% ACUM");
         headers.add("ABC");
 
@@ -673,28 +554,30 @@ public class LayoutRepresentanteECliente extends PdfPageEventHelper implements E
             Font fonteParagraph = null;
             if(headers.get(i).equals("ORDEM")
                     || headers.get(i).equals("CLIENTES")
-                    || headers.get(i).equals("PRODUTOS")) {
+                    || headers.get(i).equals("PRODUTOS")
+                    || headers.get(i).equals("REPRESENTANTES")) {
                 fonteParagraph = Fontes.getHeaderTableBold();
             }else{
                 fonteParagraph = Fontes.getHeaderTableDefaultBold();
             }
             paragraph = new Paragraph(new Phrase("" + headers.get(i) + "", fonteParagraph));
             cell = new PdfPCell(paragraph);
-            cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            cell.setPadding(0);
+            cell.setPaddingBottom(2f);
+            cell.setBorder(Rectangle.BOTTOM);
             cell.setFixedHeight(10F);
-            cell.setPaddingTop(13);
             if(headers.get(i).equals("ORDEM")){
                 cell.setPaddingRight(-20f);
                 cell.setHorizontalAlignment(0);
             }else if(headers.get(i).equals("CLIENTES")
-                    || headers.get(i).equals("PRODUTOS")){
+                    || headers.get(i).equals("PRODUTOS")
+                    || headers.get(i).equals("REPRESENTANTES")){
                 cell.setPaddingLeft(15f);
                 cell.setHorizontalAlignment(0);
             }else{
                 cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
             }
-            cell.setBorder(Rectangle.BOTTOM);
-            cell.setPaddingBottom(0);
+
             tabela.addCell(cell);
         }
 
@@ -703,19 +586,17 @@ public class LayoutRepresentanteECliente extends PdfPageEventHelper implements E
                                         Fontes.getHeaderTableDefaultBold()));
             cell = new PdfPCell(paragraph);
             cell.setPadding(0);
-            cell.setPaddingTop(13f);
-            cell.setPaddingBottom(5f);
+            cell.setPaddingBottom(2f);
             cell.setBorder(Rectangle.BOTTOM);
             cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            if(headers.get(i).equals("QTDE") || headers.get(i).equals("Valor")){
+            if(headers.get(i).equals("QTDE") || headers.get(i).equals("VALOR")){
                 cell.setPaddingLeft(0);
                 cell.setPaddingRight(3);
             }else if(headers.get(i).equals("%")){
+                cell.setPadding(2f);
+                cell.setPaddingTop(0);
+            }else if(headers.get(i).equals("MÉDIA")){
                 cell.setPadding(2);
-                cell.setPaddingTop(13f);
-            }else if(headers.get(i).equals("MÃ‰DIA")){
-                cell.setPadding(2);
-                cell.setPaddingTop(13f);
             }else if(headers.get(i).equals("% ACUM")){
                 cell.setPaddingRight(0);
             }else if(headers.equals("ABC")){
@@ -738,6 +619,6 @@ public class LayoutRepresentanteECliente extends PdfPageEventHelper implements E
     }
 
     public static void setFiltrosParametros(FiltrosParametros filtrosParametros) {
-        LayoutRepresentanteECliente.filtrosParametros = filtrosParametros;
+        LayoutTipoDois.filtrosParametros = filtrosParametros;
     }
 }

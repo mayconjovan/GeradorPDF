@@ -6,10 +6,9 @@ package systextil.bo.geradorpdfcurvaabc;
  */
 
 import br.com.intersys.systextil.connection.AppConnection;
-import systextil.bo.geradorpdfcurvaabc.CalculoCurvaAbc;
-import systextil.bo.geradorpdfcurvaabc.ConstrutorView;
-import systextil.bo.geradorpdfcurvaabc.FiltrosParametros;
-import systextil.bo.geradorpdfcurvaabc.ConnectionFactory;
+import systextil.temp.TempConverter;
+import systextil.temp.TempFilter;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,116 +19,190 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author Trabalho
  */
 public class ViewDAO {
 
-    Connection connection;
+    private static FiltrosParametros filtrosParametros;
+    /*
 
-    public ViewDAO() {
-        connection = ConnectionFactory.getConnetion();
+     */
+    public static String retornaCondicaoFatuOuPedi(String table, String campo, TempFilter temp, int posicao) {
+        String text = " and " + table + "." + campo + "";
+        text += temp.incExc ? " not" : "";
+        text += " in";
+
+        text += "(";
+
+        List<Integer> arr = new ArrayList<>();
+        if(temp.getList(TempConverter.IDENTITY).size() > 0) {
+            for (Object index : temp.getList(TempConverter.IDENTITY)) {
+                Integer[] a = (Integer[]) index;
+                arr.add(a[posicao]);
+            }
+
+            for (Integer index : arr) {
+                text += index.toString();
+                text += ",";
+            }
+            text = text.substring(0, text.length() - 1);
+            text += ")";
+            System.out.println(text);
+            return text;
+        }
+
+        System.out.println("Chegou aqui");
+
+        return " ";
+}
+
+    /*
+      Será colocao como verdadeiro o parametro isString caso
+      a lista retornada da busca ser um ArrayList de String
+   */
+    public static String retornaCondicaoSQL(String table, String campo, TempFilter temp, boolean isString) {
+        String text = " and " + table + "." + campo + "";
+        text += temp.incExc ? " not" : "";
+        text += " in";
+
+        text += "(";
+
+        if(table.equals("pedi_100") && campo.equals("codigo_empresa")){
+            if(filtrosParametros.getCodigoEmpresa() == 9999) {
+                text += filtrosParametros.getCodigoEmpresa();
+                text += ")";
+                return text;
+            }
+
+            return " ";
+        }
+
+        if (!isString) {
+            if (temp.getIntegerList().size() > 0) {
+                for (Object a : temp.getIntegerList()) {
+                    text += a;
+                    text += ",";
+                }
+                text = text.substring(0, text.length() - 1);
+                text += ")";
+            } else {
+                return " ";
+            }
+        } else {
+            if (temp.getStringList().size() > 0) {
+                for (Object a : temp.getStringList()) {
+                    text += "'" + a + "'";
+                    text += ",";
+                }
+                text = text.substring(0, text.length() - 1);
+                text += ") ";
+            } else {
+                return " ";
+            }
+        }
+
+        System.out.println(text);
+        return text;
     }
 
     public static List<ConstrutorView> buscarDados(FiltrosParametros filtros) {
-        System.out.println("Entrando no Busca");
-        Connection con = ConnectionFactory.getConnetion();
+
+        filtrosParametros = filtros;
+        Connection connection = new AppConnection().getConnection();
         PreparedStatement stmt = null;
         ResultSet rs = null;
         List<ConstrutorView> views = new ArrayList<ConstrutorView>();
 // <editor-fold>
         String mioloSql;
         if (filtros.getVenda_faturamento() == 1) {
-            mioloSql = "                (select decode(" + filtros.getAgrupamento() + "	\n"
-                    + "                                         , 1, pedi_100.cod_rep_cliente||''                                                                   \n"
-                    + "                                         , 2, pedi_100.cod_rep_cliente||''                                                                   \n"
-                    + "                                         , 3, pedi_110.cd_it_pe_nivel99||'.'||pedi_110.cd_it_pe_grupo||''                                    \n"
-                    + "                                         , 4, pedi_100.cli_ped_cgc_cli9||'/'||pedi_100.cli_ped_cgc_cli4||'-'||pedi_100.cli_ped_cgc_cli2      \n"
-                    + "                                         , 5, pedi_110.cd_it_pe_nivel99||'.'||pedi_110.cd_it_pe_grupo||''                                    \n"
-                    + "                                         , 6, pedi_100.cod_rep_cliente||''                                                                   \n"
-                    + "                                         , 7, pedi_100.cli_ped_cgc_cli9||'/'||pedi_100.cli_ped_cgc_cli4||'-'||pedi_100.cli_ped_cgc_cli2||''  \n"
-                    + "                                         , 8, pedi_110.cd_it_pe_nivel99||'.'||pedi_110.cd_it_pe_grupo                                        \n"
-                    + "                                         , 9, pedi_110.cd_it_pe_nivel99||'.'||pedi_110.cd_it_pe_grupo                                        \n"
-                    + "                                         , 10,pedi_110.cd_it_pe_nivel99||'.'||pedi_110.cd_it_pe_grupo||'.'\n"
-                    + "                                            ||pedi_110.cd_it_pe_subgrupo||'.'||pedi_110.cd_it_pe_item                                        \n"
-                    + "                                         ) agrupamento_1             \n"
-                    + "                              \n"
-                    + "                                         , decode(" + filtros.getAgrupamento() + "	\n"
-                    + "                                         , 1,' '                                                                                             \n"
-                    + "                                         , 2, pedi_100.cli_ped_cgc_cli9||'/'||pedi_100.cli_ped_cgc_cli4||'-'||pedi_100.cli_ped_cgc_cli2      \n"
-                    + "                                         , 3, pedi_100.cod_rep_cliente                                                                       \n"
-                    + "                                         , 4,' '                                                                                             \n"
-                    + "                                         , 5, pedi_100.cli_ped_cgc_cli9||'/'||pedi_100.cli_ped_cgc_cli4||'-'||pedi_100.cli_ped_cgc_cli2      \n"
-                    + "                                         , 6, pedi_110.cd_it_pe_nivel99||'.'||pedi_110.cd_it_pe_grupo                                        \n"
-                    + "                                         , 7, pedi_110.cd_it_pe_nivel99||'.'||pedi_110.cd_it_pe_grupo                                        \n"
-                    + "                                         , 8, ' '                                                                                            \n"
-                    + "                                         , 9, ' '                                                                                            \n"
-                    + "                                         , 10, ' '                                                                                           \n"
-                    + "                                         ) agrupamento_2                       \n"
+            mioloSql = "(select decode(" + filtros.getAgrupamento() + "	\n"
+                    + ", 1, pedi_100.cod_rep_cliente||''\n"
+                    + ", 2, pedi_100.cod_rep_cliente||''\n"
+                    + ", 3, pedi_110.cd_it_pe_nivel99||'.'||pedi_110.cd_it_pe_grupo||''\n"
+                    + ", 4, pedi_100.cli_ped_cgc_cli9||'/'||pedi_100.cli_ped_cgc_cli4||'-'||pedi_100.cli_ped_cgc_cli2\n"
+                    + ", 5, pedi_110.cd_it_pe_nivel99||'.'||pedi_110.cd_it_pe_grupo||''\n"
+                    + ", 6, pedi_100.cod_rep_cliente||''\n"
+                    + ", 7, pedi_100.cli_ped_cgc_cli9||'/'||pedi_100.cli_ped_cgc_cli4||'-'||pedi_100.cli_ped_cgc_cli2||''\n"
+                    + ", 8, pedi_110.cd_it_pe_nivel99||'.'||pedi_110.cd_it_pe_grupo\n"
+                    + ", 9, pedi_110.cd_it_pe_nivel99||'.'||pedi_110.cd_it_pe_grupo\n"
+                    + ", 10,pedi_110.cd_it_pe_nivel99||'.'||pedi_110.cd_it_pe_grupo||'.'\n"
+                    + "||pedi_110.cd_it_pe_subgrupo||'.'||pedi_110.cd_it_pe_item) agrupamento_1\n"
                     + "\n"
-                    + "                                         , sum((      decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)))) vendido \n"
-                    + "                                         , sum(sum((decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1))))) over() vendido_geral \n"
-                    + "                                       \n"
-                    + "                                                             , sum((      decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)))) /\n"
-                    + "                                           sum(sum((decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1))))) over() * 100 participacao_geral \n"
-                    + "                                                                                \n"
-                    + "                                         , sum(    decode(" + filtros.getQtdeValor()+ "	,1,0,pedi_110.qtde_pedida * (decode(" + filtros.getCusto() + "	,1,basi_010.preco_custo,basi_010.preco_custo_info)))) cmv \n"
-                    + "                                         , sum(sum(decode(" + filtros.getQtdeValor() + "	,1,0,pedi_110.qtde_pedida * (decode(" + filtros.getCusto() + "	,1,basi_010.preco_custo,basi_010.preco_custo_info))))) over() cmv_geral \n"
-                    + "                                                                                \n"
-                    + "                                         , (sum((decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)))) / 13 media \n"
-                    + "                                         \n"
-                    + "                                         , sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +370,'yyyymm') ,to_char(trunc(trunc(to_date('30/jun/2019'	, 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0)) mes01\n"
-                    + "                                         , sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +340,'yyyymm') ,to_char(trunc(trunc(to_date('30/jun/2019'	, 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis()  + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0)) mes02\n"
-                    + "                                         , sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +310,'yyyymm') ,to_char(trunc(trunc(to_date('30/jun/2019'	, 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis()  + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0)) mes03\n"
-                    + "                                         , sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +280,'yyyymm') ,to_char(trunc(trunc(to_date('30/jun/2019'	, 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis()  + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0)) mes04\n"
-                    + "                                         , sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +250,'yyyymm') ,to_char(trunc(trunc(to_date('30/jun/2019'	, 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis()  + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0)) mes05\n"
-                    + "                                         , sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +220,'yyyymm') ,to_char(trunc(trunc(to_date('30/jun/2019'	, 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis()  + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0)) mes06\n"
-                    + "                                         , sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +190,'yyyymm') ,to_char(trunc(trunc(to_date('30/jun/2019'	, 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis()  + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0)) mes07\n"
-                    + "                                         , sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +160,'yyyymm') ,to_char(trunc(trunc(to_date('30/jun/2019'	, 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis()  + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0)) mes08\n"
-                    + "                                         , sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +130,'yyyymm') ,to_char(trunc(trunc(to_date('30/jun/2019'	, 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis()  + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0)) mes09\n"
-                    + "                                         , sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +100,'yyyymm') ,to_char(trunc(trunc(to_date('30/jun/2019'	, 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis()  + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0)) mes10\n"
-                    + "                                         , sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')   +70,'yyyymm') ,to_char(trunc(trunc(to_date('30/jun/2019'	, 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis()  + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0)) mes11\n"
-                    + "                                         , sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')   +40,'yyyymm') ,to_char(trunc(trunc(to_date('30/jun/2019'	, 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis()  + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0)) mes12\n"
-                    + "                                         , sum(decode(to_char      (pedi_100.data_entr_venda,            'yyyymm') ,to_char(trunc(trunc(to_date('30/jun/2019'	, 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis()  + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0)) mes13\n"
-                    + "                                     \n"
-                    + "                                         , sum(sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +340,'yyyymm') ,to_char(trunc(trunc(to_date('30/jun/2019'	, 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0))) over() geral_mes02\n"
-                    + "                                         , sum(sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +370,'yyyymm') ,to_char(trunc(trunc(to_date('30/jun/2019'	, 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0))) over() geral_mes01\n"
-                    + "                                         , sum(sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +310,'yyyymm') ,to_char(trunc(trunc(to_date('30/jun/2019'	, 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0))) over() geral_mes03\n"
-                    + "                                         , sum(sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +280,'yyyymm') ,to_char(trunc(trunc(to_date('30/jun/2019'	, 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0))) over() geral_mes04\n"
-                    + "                                         , sum(sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +250,'yyyymm') ,to_char(trunc(trunc(to_date('30/jun/2019'	, 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0))) over() geral_mes05\n"
-                    + "                                         , sum(sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +220,'yyyymm') ,to_char(trunc(trunc(to_date('30/jun/2019'	, 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0))) over() geral_mes06\n"
-                    + "                                         , sum(sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +190,'yyyymm') ,to_char(trunc(trunc(to_date('30/jun/2019'	, 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0))) over() geral_mes07\n"
-                    + "                                         , sum(sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +160,'yyyymm') ,to_char(trunc(trunc(to_date('30/jun/2019'	, 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0))) over() geral_mes08\n"
-                    + "                                         , sum(sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +130,'yyyymm') ,to_char(trunc(trunc(to_date('30/jun/2019'	, 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0))) over() geral_mes09\n"
-                    + "                                         , sum(sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +100,'yyyymm') ,to_char(trunc(trunc(to_date('30/jun/2019'	, 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0))) over() geral_mes10\n"
-                    + "                                         , sum(sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')   +70,'yyyymm') ,to_char(trunc(trunc(to_date('30/jun/2019'	, 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0))) over() geral_mes11\n"
-                    + "                                         , sum(sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')   +40,'yyyymm') ,to_char(trunc(trunc(to_date('30/jun/2019'	, 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0))) over() geral_mes12\n"
-                    + "                                         , sum(sum(decode(to_char      (pedi_100.data_entr_venda,            'yyyymm') ,to_char(trunc(trunc(to_date('30/jun/2019'	, 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0))) over() geral_mes13\n"
+                    + ", decode(" + filtros.getAgrupamento() + "\n"
+                    + ", 1,' '\n"
+                    + ", 2, pedi_100.cli_ped_cgc_cli9||'/'||pedi_100.cli_ped_cgc_cli4||'-'||pedi_100.cli_ped_cgc_cli2\n"
+                    + ", 3, pedi_100.cod_rep_cliente\n"
+                    + ", 4,' '\n"
+                    + ", 5, pedi_100.cli_ped_cgc_cli9||'/'||pedi_100.cli_ped_cgc_cli4||'-'||pedi_100.cli_ped_cgc_cli2\n"
+                    + ", 6, pedi_110.cd_it_pe_nivel99||'.'||pedi_110.cd_it_pe_grupo\n"
+                    + ", 7, pedi_110.cd_it_pe_nivel99||'.'||pedi_110.cd_it_pe_grupo\n"
+                    + ", 8, ' '\n"
+                    + ", 9, ' '\n"
+                    + ", 10, ' ' ) agrupamento_2\n"
                     + "\n"
-                    + "                                         , decode(" + filtros.getAgrupamento() + "	\n"
-                    + "                                         , 1, pedi_020.nome_rep_cliente                                        \n"
-                    + "                                         , 2, pedi_020.nome_rep_cliente            \n"
-                    + "                                         , 3, basi_030.descr_referencia            \n"
-                    + "                                         , 4, pedi_010.nome_cliente                                            \n"
-                    + "                                         , 5, basi_030.descr_referencia            \n"
-                    + "                                         , 6, pedi_020.nome_rep_cliente            \n"
-                    + "                                         , 7, pedi_010.nome_cliente                \n"
-                    + "                                         , 8, basi_030.descr_referencia                                        \n"
-                    + "                                         , 9, basi_030.descr_referencia                                        \n"
-                    + "                                         , 10,basi_010.narrativa                                               \n"
-                    + "                                         ) descricao_agrupamento1 \n"
-                    + "                                         , decode(" + filtros.getAgrupamento() + "              \n"
-                    + "                                         , 1, ''                                           \n"
-                    + "                                         , 2, pedi_010.nome_cliente                        \n"
-                    + "                                         , 3, pedi_020.nome_rep_cliente                     \n"
-                    + "                                         , 4, ''                                           \n"
-                    + "                                         , 5, pedi_010.nome_cliente          \n"
-                    + "                                         , 6, basi_030.descr_referencia      \n"
-                    + "                                         , 7, basi_030.descr_referencia          \n"
-                    + "                                         , 8, ''                                        \n"
-                    + "                                         , 9, ''                                        \n"
-                    + "                                         , 10,''                                               \n"
-                    + "                                         ) descricao_agrupamento2 \n"
+                    + ", sum((      decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)))) vendido \n"
+                    + ", sum(sum((decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1))))) over() vendido_geral \n"
+                    + "\n"
+                    + ", sum((      decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)))) /\n"
+                    + "sum(sum((decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1))))) over() * 100 participacao_geral \n"
+                    + "\n"
+                    + ", sum(    decode(" + filtros.getQtdeValor() + "	,1,0,pedi_110.qtde_pedida * (decode(" + filtros.getCusto() + "	,1,basi_010.preco_custo,basi_010.preco_custo_info)))) cmv \n"
+                    + ", sum(sum(decode(" + filtros.getQtdeValor() + "	,1,0,pedi_110.qtde_pedida * (decode(" + filtros.getCusto() + "	,1,basi_010.preco_custo,basi_010.preco_custo_info))))) over() cmv_geral \n"
+                    + "\n"
+                    + ", (sum((decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)))) / 13 media \n"
+                    + "\n"
+                    + ", sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +370,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0)) mes01\n"
+                    + ", sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +340,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0)) mes02\n"
+                    + ", sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +310,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0)) mes03\n"
+                    + ", sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +280,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "','dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0)) mes04\n"
+                    + ", sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +250,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "','dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0)) mes05\n"
+                    + ", sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +220,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0)) mes06\n"
+                    + ", sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +190,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0)) mes07\n"
+                    + ", sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +160,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0)) mes08\n"
+                    + ", sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +130,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0)) mes09\n"
+                    + ", sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +100,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0)) mes10\n"
+                    + ", sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')   +70,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0)) mes11\n"
+                    + ", sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')   +40,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0)) mes12\n"
+                    + ", sum(decode(to_char      (pedi_100.data_entr_venda,            'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0)) mes13\n"
+                    + "\n"
+                    + ", sum(sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +340,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0))) over() geral_mes02\n"
+                    + ", sum(sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +370,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0))) over() geral_mes01\n"
+                    + ", sum(sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +310,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0))) over() geral_mes03\n"
+                    + ", sum(sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +280,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0))) over() geral_mes04\n"
+                    + ", sum(sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +250,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0))) over() geral_mes05\n"
+                    + ", sum(sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +220,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0))) over() geral_mes06\n"
+                    + ", sum(sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +190,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0))) over() geral_mes07\n"
+                    + ", sum(sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +160,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0))) over() geral_mes08\n"
+                    + ", sum(sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +130,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0))) over() geral_mes09\n"
+                    + ", sum(sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')  +100,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0))) over() geral_mes10\n"
+                    + ", sum(sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')   +70,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0))) over() geral_mes11\n"
+                    + ", sum(sum(decode(to_char(trunc(pedi_100.data_entr_venda,'mm')   +40,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0))) over() geral_mes12\n"
+                    + ", sum(sum(decode(to_char      (pedi_100.data_entr_venda,            'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + "	, 1,pedi_110.qtde_pedida, 2,((pedi_110.qtde_pedida * pedi_110.valor_unitario)*(1-(pedi_110.percentual_desc /100)))) * decode(" + filtros.getQtdeValor() + "	,1,1,2,decode(" + filtros.getAgrupamento() + "	,9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + "	,999.99,pedi_080.perc_pis," + filtros.getPercPis() + "	) + decode(" + filtros.getPercCofins() + "	,999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + "	)) / 100),1)),0))) over() geral_mes13\n"
+                    + "\n"
+                    + ", decode(" + filtros.getAgrupamento() + "\n"
+                    + ", 1, pedi_020.nome_rep_cliente\n"
+                    + ", 2, pedi_020.nome_rep_cliente\n"
+                    + ", 3, basi_030.descr_referencia\n"
+                    + ", 4, pedi_010.nome_cliente\n"
+                    + ", 5, basi_030.descr_referencia\n"
+                    + ", 6, pedi_020.nome_rep_cliente\n"
+                    + ", 7, pedi_010.nome_cliente\n"
+                    + ", 8, basi_030.descr_referencia\n"
+                    + ", 9, basi_030.descr_referencia\n"
+                    + ", 10,basi_010.narrativa\n"
+                    + ") descricao_agrupamento1\n"
+                    + ", decode(" + filtros.getAgrupamento() + "              \n"
+                    + ", 1, ''                                           \n"
+                    + ", 2, pedi_010.nome_cliente                        \n"
+                    + ", 3, pedi_020.nome_rep_cliente                     \n"
+                    + ", 4, ''                                           \n"
+                    + ", 5, pedi_010.nome_cliente          \n"
+                    + ", 6, basi_030.descr_referencia      \n"
+                    + ", 7, basi_030.descr_referencia          \n"
+                    + ", 8, ''                                        \n"
+                    + ", 9, ''                                        \n"
+                    + ", 10,''                                               \n"
+                    + ") descricao_agrupamento2 \n"
                     + "                    \n"
                     + "                                      from pedi_100, pedi_110, basi_010, pedi_080, basi_030, pedi_010, basi_160, pedi_020 \n"
                     + "                                        where 1=1\n"
@@ -148,23 +221,24 @@ public class ViewDAO {
                     + "                                          and pedi_010.cod_cidade = basi_160.cod_cidade\n"
                     + "                                          and pedi_100.cod_rep_cliente = pedi_020.cod_rep_cliente\n"
                     + "                                          \n"
-                    + "                                          and pedi_100.data_entr_venda  between trunc(to_date('" + filtros.getDataInicialSQL() +"', 'dd/mm/yyyy')-370, 'mm') and trunc(trunc(to_date('" + filtros.getDataInicialSQL() +"', 'dd/mm/yyyy') ,'mm')+31,'mm')-1                                  \n"
+                    + "                                          and pedi_100.data_entr_venda   between trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy')-370, 'mm') and trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1                                                                   \n"
                     + "                               \n"
                     + "                                          and pedi_100.tecido_peca        =  decode(" + filtros.getNivel() + "	,99,pedi_100.tecido_peca,1,'1',2,'2',4,'4',7,'7',9,'9')                                                   \n"
                     + "                                          and pedi_080.faturamento        <> decode(" + filtros.getFaturamento() + "	,0,0,1,2,2,1)                                                                                       \n"
                     + "                                          and pedi_110.cod_cancelamento <  decode('" + filtros.getConsideraCancelados() + "','S', 1000,'N',1) \n"
-                    + //"/*\n" +
-                    //"                                          and (pedi_100.codigo_empresa   in (select REGEXP_SUBSTR(str, exp,1,level) lista from (select p_codigo_empresa str,     '[^,]+' exp  from dual)connect by REGEXP_SUBSTR(str, exp, 1, level) is not null) or p_codigo_empresa     = '0000') \n" +
-                    //"                                          and (basi_030.colecao          in (select REGEXP_SUBSTR(str, exp,1,level) lista from (select p_colecao str,            '[^,]+' exp  from dual)connect by REGEXP_SUBSTR(str, exp, 1, level) is not null) or p_colecao            = '000')                                                                                                      \n" +
-                    //"                                          and (basi_030.linha_produto    in (select REGEXP_SUBSTR(str, exp,1,level) lista from (select p_linha_produto str,      '[^,]+' exp  from dual)connect by REGEXP_SUBSTR(str, exp, 1, level) is not null) or p_linha_produto      = '00')  \n" +
-                    //"                                          and (pedi_100.cod_rep_cliente  in (select REGEXP_SUBSTR(str, exp,1,level) lista from (select p_codigo_rep_cliente str, '[^,]+' exp  from dual)connect by REGEXP_SUBSTR(str, exp, 1, level) is not null) or p_codigo_rep_cliente = '0000')                                                                                                     \n" +
-                    //"                                          and (pedi_100.cli_ped_cgc_cli9 in (select REGEXP_SUBSTR(str, exp,1,level) lista from (select p_cnpj_9 str,             '[^,]+' exp  from dual)connect by REGEXP_SUBSTR(str, exp, 1, level) is not null) or p_cnpj_9             = '000000000')\n" +
-                    //"                                          and (basi_160.estado           in (select REGEXP_SUBSTR(str, exp,1,level) lista from (select p_estado_cliente str,     '[^,]+' exp  from dual)connect by REGEXP_SUBSTR(str, exp, 1, level) is not null) or p_estado_cliente     = '00') \n" +
-                    //"                                          and (pedi_010.tipo_cliente     in (select REGEXP_SUBSTR(str, exp,1,level) lista from (select p_tipo_cliente str,       '[^,]+' exp  from dual)connect by REGEXP_SUBSTR(str, exp, 1, level) is not null) or p_tipo_cliente       = '00') \n" +
-                    //"                                          and (pedi_010.cod_cidade       in (select REGEXP_SUBSTR(str, exp,1,level) lista from (select p_cod_cidade str,         '[^,]+' exp  from dual)connect by REGEXP_SUBSTR(str, exp, 1, level) is not null) or p_cod_cidade         = '0000') \n" +
-                    //"                                          and (pedi_110.cd_it_pe_grupo   in (select REGEXP_SUBSTR(str, exp,1,level) lista from (select p_grupo_refencia str,     '[^,]+' exp  from dual)connect by REGEXP_SUBSTR(str, exp, 1, level) is not null) or p_grupo_refencia     = '00000') \n" +
-                    //"                                          and (basi_030.artigo           in (select REGEXP_SUBSTR(str, exp,1,level) lista from (select p_artigo_produto str,     '[^,]+' exp  from dual)connect by REGEXP_SUBSTR(str, exp, 1, level) is not null) or p_artigo_produto     = '0000') \n" +
-                    //"  */                                        \n" +
+                    +
+                    "" + retornaCondicaoSQL("pedi_100", "codigo_empresa", filtros.getWidgetArtigoProdutos(), false) +
+                    "" + retornaCondicaoSQL("pedi_100", "cod_rep_cliente", filtros.getWidgetRepresentante(), false) +
+                    "" + retornaCondicaoSQL("fatu_060", "grupo_estrutura", filtros.getWidgetProdutos(), true) +
+                    "" + retornaCondicaoSQL("basi_030", "colecao", filtros.getWidgetColecao(), false) +
+                    "" + retornaCondicaoSQL("basi_030", "linha_produto", filtros.getWidgetLinhaProduto(), false) +
+                    "" + retornaCondicaoFatuOuPedi("pedi_100", "cli_ped_cgc_cli9", filtros.getWidgetCliente(), 0)  +
+                    "" + retornaCondicaoFatuOuPedi("pedi_100", "cli_ped_cgc_cli4", filtros.getWidgetCliente(), 1)  +
+                    "" + retornaCondicaoFatuOuPedi("pedi_100", "cli_ped_cgc_cli2", filtros.getWidgetCliente(), 2)  +
+                    "" + retornaCondicaoSQL("basi_160", "estado", filtros.getWidgetEstadoCliente(), true) +
+                    "" + retornaCondicaoSQL("pedi_010", "tipo_cliente", filtros.getWidgetTipoCliente(), false) +
+                    "" + retornaCondicaoSQL("pedi_010", "cod_cidade", filtros.getWidgetCidadeCliente(), false) +
+                    "" + retornaCondicaoSQL("basi_030", "artigo", filtros.getWidgetArtigoProdutos(), false) +
                     "                                     group by \n"
                     + "                                              decode(" + filtros.getAgrupamento() + "	\n"
                     + "                                              , 1, pedi_100.cod_rep_cliente||''                                                                   \n"
@@ -221,7 +295,198 @@ public class ViewDAO {
                     + "                                                                                                                                     \n"
                     + "                                order by 1 desc, 5 desc) base_sql \n";
         } else {
-            mioloSql = "faturamento";
+            mioloSql = "                           (select decode(" + filtros.getAgrupamento() + "\n" +
+                    "                                         , 1, fatu_050.cod_rep_cliente||''                                            \n" +
+                    "                                         , 2, fatu_050.cod_rep_cliente||''                                                                 \n" +
+                    "                                         , 3, fatu_060.nivel_estrutura||'.'||fatu_060.grupo_estrutura||''\n" +
+                    "                                         , 4, fatu_050.cgc_9||'/'||fatu_050.cgc_4||'-'||fatu_050.cgc_2\n" +
+                    "                                         , 5, fatu_060.nivel_estrutura||'.'||fatu_060.grupo_estrutura||''\n" +
+                    "                                         , 6, fatu_050.cod_rep_cliente||''                                  \n" +
+                    "                                         , 7, fatu_050.cgc_9||'/'||fatu_050.cgc_4||'-'||fatu_050.cgc_2||''\n" +
+                    "                                         , 8, fatu_060.nivel_estrutura||'.'||fatu_060.grupo_estrutura \n" +
+                    "                                         , 9, fatu_060.nivel_estrutura||'.'||fatu_060.grupo_estrutura\n" +
+                    "                                         , 10,fatu_060.nivel_estrutura||'.'||fatu_060.grupo_estrutura||'.'\n" +
+                    "                                            ||fatu_060.subgru_estrutura||'.'||fatu_060.item_estrutura\n" +
+                    "                                         ) agrupamento_1            \n" +
+                    "                              \n" +
+                    "                                         , decode(" + filtros.getAgrupamento() + "" +
+                    "                                         , 1,' '\n" +
+                    "                                         , 2, fatu_050.cgc_9||'/'||fatu_050.cgc_4||'-'||fatu_050.cgc_2\n" +
+                    "                                         , 3, fatu_050.cod_rep_cliente\n" +
+                    "                                         , 4,' '\n" +
+                    "                                         , 5, fatu_050.cgc_9||'/'||fatu_050.cgc_4||'-'||fatu_050.cgc_2\n" +
+                    "                                         , 6, fatu_060.nivel_estrutura||'.'||fatu_060.grupo_estrutura\n" +
+                    "                                         , 7, fatu_060.nivel_estrutura||'.'||fatu_060.grupo_estrutura\n" +
+                    "                                         , 8, ' '\n" +
+                    "                                         , 9, ' '\n" +
+                    "                                         , 10,' '\n" +
+                    "                                         ) agrupamento_2\n" +
+                    "\n" +
+                    "                                        \n" +
+                    "                                         , sum((    decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)))) vendido\n" +
+                    "                                         , sum(sum((decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1))))) over() vendido_geral\n" +
+                    "                                       \n" +
+                    "                                         , sum((    decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)))) /\n" +
+                    "                                           sum(sum((decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1))))) over() * 100 participacao_geral\n" +
+                    "                                                                                \n" +
+                    "                                        \n" +
+                    "                                         , sum(    decode(" + filtros.getQtdeValor() + ",1,0,fatu_060.qtde_item_fatur * (decode(" + filtros.getCusto() + ",1,basi_010.preco_custo,basi_010.preco_custo_info)))) cmv\n" +
+                    "                                         , sum(sum(decode(" + filtros.getQtdeValor() + ",1,0,fatu_060.qtde_item_fatur * (decode(" + filtros.getCusto() + ",1,basi_010.preco_custo,basi_010.preco_custo_info))))) over() cmv_geral\n" +
+                    "                                                                                \n" +
+                    "                                         \n" +
+                    "                                         , (sum((decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)))) / 13 media\n" +
+                    "                                         \n" +
+                    "                                         \n" +
+                    "                                         , sum(decode(to_char(trunc(fatu_050.data_saida,'mm')  +370,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)),0)) mes01\n" +
+                    "                                         , sum(decode(to_char(trunc(fatu_050.data_saida,'mm')  +340,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)),0)) mes02\n" +
+                    "                                         , sum(decode(to_char(trunc(fatu_050.data_saida,'mm')  +310,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)),0)) mes03\n" +
+                    "                                         , sum(decode(to_char(trunc(fatu_050.data_saida,'mm')  +280,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)),0)) mes04\n" +
+                    "                                         , sum(decode(to_char(trunc(fatu_050.data_saida,'mm')  +250,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)),0)) mes05\n" +
+                    "                                         , sum(decode(to_char(trunc(fatu_050.data_saida,'mm')  +220,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)),0)) mes06\n" +
+                    "                                         , sum(decode(to_char(trunc(fatu_050.data_saida,'mm')  +190,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)),0)) mes07\n" +
+                    "                                         , sum(decode(to_char(trunc(fatu_050.data_saida,'mm')  +160,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)),0)) mes08\n" +
+                    "                                         , sum(decode(to_char(trunc(fatu_050.data_saida,'mm')  +130,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)),0)) mes09\n" +
+                    "                                         , sum(decode(to_char(trunc(fatu_050.data_saida,'mm')  +100,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)),0)) mes10\n" +
+                    "                                         , sum(decode(to_char(trunc(fatu_050.data_saida,'mm')   +70,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)),0)) mes11\n" +
+                    "                                         , sum(decode(to_char(trunc(fatu_050.data_saida,'mm')   +40,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)),0)) mes12\n" +
+                    "                                         , sum(decode(to_char      (fatu_050.data_saida,            'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)),0)) mes13\n" +
+                    "                                     \n" +
+                    "                                         \n" +
+                    "                                         , sum(sum(decode(to_char(trunc(fatu_050.data_saida,'mm')  +370,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)),0))) over() geral_mes01\n" +
+                    "                                         , sum(sum(decode(to_char(trunc(fatu_050.data_saida,'mm')  +340,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)),0))) over() geral_mes02\n" +
+                    "                                         , sum(sum(decode(to_char(trunc(fatu_050.data_saida,'mm')  +310,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)),0))) over() geral_mes03\n" +
+                    "                                         , sum(sum(decode(to_char(trunc(fatu_050.data_saida,'mm')  +280,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)),0))) over() geral_mes04\n" +
+                    "                                         , sum(sum(decode(to_char(trunc(fatu_050.data_saida,'mm')  +250,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)),0))) over() geral_mes05\n" +
+                    "                                         , sum(sum(decode(to_char(trunc(fatu_050.data_saida,'mm')  +220,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)),0))) over() geral_mes06\n" +
+                    "                                         , sum(sum(decode(to_char(trunc(fatu_050.data_saida,'mm')  +190,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)),0))) over() geral_mes07\n" +
+                    "                                         , sum(sum(decode(to_char(trunc(fatu_050.data_saida,'mm')  +160,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)),0))) over() geral_mes08\n" +
+                    "                                         , sum(sum(decode(to_char(trunc(fatu_050.data_saida,'mm')  +130,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)),0))) over() geral_mes09\n" +
+                    "                                         , sum(sum(decode(to_char(trunc(fatu_050.data_saida,'mm')  +100,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)),0))) over() geral_mes10\n" +
+                    "                                         , sum(sum(decode(to_char(trunc(fatu_050.data_saida,'mm')   +70,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)),0))) over() geral_mes11\n" +
+                    "                                         , sum(sum(decode(to_char(trunc(fatu_050.data_saida,'mm')   +40,'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)),0))) over() geral_mes12\n" +
+                    "                                         , sum(sum(decode(to_char      (fatu_050.data_saida,            'yyyymm') ,to_char(trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1,'yyyymm'), decode(" + filtros.getQtdeValor() + ", 1,fatu_060.qtde_item_fatur, 2,((fatu_060.qtde_item_fatur * fatu_060.valor_unitario)*(1-(fatu_060.desconto_item /100)))) * decode(" + filtros.getQtdeValor() + ",1,1,2,decode(" + filtros.getAgrupamento() + ",9,(1.00 - (((pedi_080.perc_icms * (100 - pedi_080.perc_reducao_icm) / 100)) + decode(" + filtros.getPercPis() + ",999.99,pedi_080.perc_pis," + filtros.getPercPis() + ") + decode(" + filtros.getPercCofins() + ",999.99,pedi_080.perc_cofins," + filtros.getPercCofins() + ")) / 100),1)),0))) over() geral_mes13\n" +
+                    "\n" +
+                    ", decode(" + filtros.getAgrupamento() + "	\n"
+                    + "                                         , 1, pedi_020.nome_rep_cliente                                        \n"
+                    + "                                         , 2, pedi_020.nome_rep_cliente            \n"
+                    + "                                         , 3, basi_030.descr_referencia            \n"
+                    + "                                         , 4, pedi_010.nome_cliente                                            \n"
+                    + "                                         , 5, basi_030.descr_referencia            \n"
+                    + "                                         , 6, pedi_020.nome_rep_cliente            \n"
+                    + "                                         , 7, pedi_010.nome_cliente                \n"
+                    + "                                         , 8, basi_030.descr_referencia                                        \n"
+                    + "                                         , 9, basi_030.descr_referencia                                        \n"
+                    + "                                         , 10,basi_010.narrativa                                               \n"
+                    + "                                         ) descricao_agrupamento1 \n"
+                    + "                                         , decode(" + filtros.getAgrupamento() + "              \n"
+                    + "                                         , 1, ''                                           \n"
+                    + "                                         , 2, pedi_010.nome_cliente                        \n"
+                    + "                                         , 3, pedi_020.nome_rep_cliente                     \n"
+                    + "                                         , 4, ''                                           \n"
+                    + "                                         , 5, pedi_010.nome_cliente          \n"
+                    + "                                         , 6, basi_030.descr_referencia      \n"
+                    + "                                         , 7, basi_030.descr_referencia          \n"
+                    + "                                         , 8, ''                                        \n"
+                    + "                                         , 9, ''                                        \n"
+                    + "                                         , 10,''                                               \n"
+                    + "                                         ) descricao_agrupamento2 \n" +
+                    "                    \n" +
+                    "                                     \n" +
+                    "                                      from fatu_050, fatu_060, basi_010, pedi_080, basi_030, pedi_010, basi_160, pedi_020" +
+                    "                                        where 1=1\n" +
+                    "                                          and fatu_050.codigo_empresa = fatu_060.ch_it_nf_cd_empr\n" +
+                    "                                          and fatu_050.num_nota_fiscal = fatu_060.ch_it_nf_num_nfis\n" +
+                    "                                          and fatu_050.serie_nota_fisc = fatu_060.ch_it_nf_ser_nfis\n" +
+                    "                                          \n" +
+                    "                                          and fatu_060.nivel_estrutura  = basi_030.nivel_estrutura\n" +
+                    "                                          and fatu_060.grupo_estrutura  = basi_030.referencia\n" +
+                    "                                          and fatu_060.nivel_estrutura  = basi_010.nivel_estrutura\n" +
+                    "                                          and fatu_060.grupo_estrutura  = basi_010.grupo_estrutura\n" +
+                    "                                          and fatu_060.subgru_estrutura = basi_010.subgru_estrutura\n" +
+                    "                                          and fatu_060.item_estrutura   = basi_010.item_estrutura\n" +
+                    "                                          \n" +
+                    "                                          and fatu_060.natopeno_nat_oper = pedi_080.natur_operacao\n" +
+                    "                                          and fatu_060.natopeno_est_oper = pedi_080.estado_natoper\n" +
+                    "                                          and fatu_050.cgc_9 = pedi_010.cgc_9  \n" +
+                    "                                          and fatu_050.cgc_4 = pedi_010.cgc_4\n" +
+                    "                                          and fatu_050.cgc_2 = pedi_010.cgc_2\n" +
+                    "                                          \n" +
+                    "                                          and pedi_010.cod_cidade = basi_160.cod_cidade\n" +
+                    "                                          and fatu_050.cod_rep_cliente = pedi_020.cod_rep_cliente\n" +
+                    "                                          \n" +
+                    "                                          \n" +
+                    "                                          and fatu_050.data_saida  between trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy')-370, 'mm') and trunc(trunc(to_date('" + filtros.getDataInicialSQL() + "', 'dd/mm/yyyy') ,'mm')+31,'mm')-1                                  \n" +
+                    "                               \n" +
+                    "                                          and fatu_060.nivel_estrutura =  decode(" + filtros.getNivel() + ",99,fatu_060.nivel_estrutura,1,'1',2,'2',4,'4',7,'7',9,'9')                                                   \n" +
+                    "                                          and pedi_080.faturamento       <> decode(" + filtros.getFaturamento() + ",0,0,1,2,2,1)                                                                                       \n" +
+                    "                                          and fatu_060.cod_cancelamento <  decode('" + filtros.getConsideraCancelados() + "','S', 1000,'N',1) \n" +
+                    "\n" +
+                    //"and (fatu_050.codigo_empresa   in (select REGEXP_SUBSTR(str, exp,1,level) lista from (select  * from '" + filtros.getMdi().codigo_empresa +"' str,     '[^,]+' exp  from dual)connect by REGEXP_SUBSTR(str, exp, 1, level) is not null) or '" + filtros.getCliente() + "' = '0000') \n" +
+                    "" + retornaCondicaoSQL("pedi_020", "cod_rep_cliente", filtros.getWidgetRepresentante(), false) +
+                    "" + retornaCondicaoSQL("fatu_060", "grupo_estrutura", filtros.getWidgetProdutos(), true) +
+                    "" + retornaCondicaoSQL("basi_030", "colecao", filtros.getWidgetColecao(), false) +
+                    "" + retornaCondicaoSQL("basi_030", "linha_produto", filtros.getWidgetLinhaProduto(), false) +
+                    "" + retornaCondicaoFatuOuPedi("fatu_050", "cgc_9", filtros.getWidgetCliente(), 0)  +
+                    "" + retornaCondicaoFatuOuPedi("fatu_050", "cgc_4", filtros.getWidgetCliente(), 1)  +
+                    "" + retornaCondicaoFatuOuPedi("fatu_050", "cgc_2", filtros.getWidgetCliente(), 2)  +
+                    "" + retornaCondicaoSQL("basi_160", "estado", filtros.getWidgetEstadoCliente(), true) +
+                    "" + retornaCondicaoSQL("pedi_010", "tipo_cliente", filtros.getWidgetTipoCliente(), false) +
+                    "" + retornaCondicaoSQL("pedi_010", "cod_cidade", filtros.getWidgetCidadeCliente(), false) +
+                    "" + retornaCondicaoSQL("basi_030", "artigo", filtros.getWidgetArtigoProdutos(), false) +
+                    "                                        \n" +
+                    "                                     group by \n" +
+                    "                                              decode(" + filtros.getAgrupamento() + "\n" +
+                    "                                              , 1, fatu_050.cod_rep_cliente||''\n" +
+                    "                                              , 2, fatu_050.cod_rep_cliente||''\n" +
+                    "                                              , 3, fatu_060.nivel_estrutura||'.'||fatu_060.grupo_estrutura||''\n" +
+                    "                                              , 4, fatu_050.cgc_9||'/'||fatu_050.cgc_4||'-'||fatu_050.cgc_2\n" +
+                    "                                              , 5, fatu_060.nivel_estrutura||'.'||fatu_060.grupo_estrutura||''\n" +
+                    "                                              , 6, fatu_050.cod_rep_cliente||''\n" +
+                    "                                              , 7, fatu_050.cgc_9||'/'||fatu_050.cgc_4||'-'||fatu_050.cgc_2||''\n" +
+                    "                                              , 8, fatu_060.nivel_estrutura||'.'||fatu_060.grupo_estrutura\n" +
+                    "                                              , 9, fatu_060.nivel_estrutura||'.'||fatu_060.grupo_estrutura\n" +
+                    "                                              , 10,fatu_060.nivel_estrutura||'.'||fatu_060.grupo_estrutura||'.'\n" +
+                    "                                                 ||fatu_060.subgru_estrutura||'.'||fatu_060.item_estrutura\n" +
+                    "                                              )            \n" +
+                    "                                        \n" +
+                    "                                        \n" +
+                    "                                              , decode(" + filtros.getAgrupamento() + "\n" +
+                    "                                              , 1,' '\n" +
+                    "                                              , 2, fatu_050.cgc_9||'/'||fatu_050.cgc_4||'-'||fatu_050.cgc_2\n" +
+                    "                                              , 3, fatu_050.cod_rep_cliente\n" +
+                    "                                              , 4,' '\n" +
+                    "                                              , 5, fatu_050.cgc_9||'/'||fatu_050.cgc_4||'-'||fatu_050.cgc_2\n" +
+                    "                                              , 6, fatu_060.nivel_estrutura||'.'||fatu_060.grupo_estrutura\n" +
+                    "                                              , 7, fatu_060.nivel_estrutura||'.'||fatu_060.grupo_estrutura\n" +
+                    "                                              , 8, ' '\n" +
+                    "                                              , 9, ' '\n" +
+                    "                                              , 10, ' '\n" +
+                    "                                              )\n" +
+                    "                                                              , decode(" + filtros.getAgrupamento() + "	\n"
+                    + "                                         , 1, pedi_020.nome_rep_cliente                                        \n"
+                    + "                                         , 2, pedi_020.nome_rep_cliente            \n"
+                    + "                                         , 3, basi_030.descr_referencia            \n"
+                    + "                                         , 4, pedi_010.nome_cliente                                            \n"
+                    + "                                         , 5, basi_030.descr_referencia            \n"
+                    + "                                         , 6, pedi_020.nome_rep_cliente            \n"
+                    + "                                         , 7, pedi_010.nome_cliente                \n"
+                    + "                                         , 8, basi_030.descr_referencia                                        \n"
+                    + "                                         , 9, basi_030.descr_referencia                                        \n"
+                    + "                                         , 10,basi_010.narrativa                                               \n"
+                    + "                                         )  \n"
+                    + "                                         , decode(" + filtros.getAgrupamento() + "              \n"
+                    + "                                         , 1, ''                                           \n"
+                    + "                                         , 2, pedi_010.nome_cliente                        \n"
+                    + "                                         , 3, pedi_020.nome_rep_cliente                     \n"
+                    + "                                         , 4, ''                                           \n"
+                    + "                                         , 5, pedi_010.nome_cliente          \n"
+                    + "                                         , 6, basi_030.descr_referencia      \n"
+                    + "                                         , 7, basi_030.descr_referencia          \n"
+                    + "                                         , 8, ''                                        \n"
+                    + "                                         , 9, ''                                        \n"
+                    + "                                         , 10,''                                               \n"
+                    + "                                         )\n" +
+                    "                                order by 1 desc, 5 desc) base_sql\n";
         }
 
         try {
@@ -467,11 +732,10 @@ public class ViewDAO {
                     + "                        ";
 // </editor-fold>
             //      System.out.println(SQL);
-            stmt = con.prepareStatement(SQL);
+            stmt = connection.prepareStatement(SQL);
             rs = stmt.executeQuery();
-
             while (rs.next()) {
-               ConstrutorView view = new ConstrutorView();
+                ConstrutorView view = new ConstrutorView();
                 CalculoCurvaAbc calc = new CalculoCurvaAbc();
 
                 switch (filtros.getAgrupamento()) {
@@ -523,6 +787,40 @@ public class ViewDAO {
                         view.setACUM_PARTICIPACAO_GERAL(rs.getInt("acum_participacao_geral"));
                         view.setCURVAGERAL(calc.calculoAbc(rs.getInt("acum_participacao_geral"), rs.getFloat("participacao_geral"), rs.getFloat("acum_participacao_geral"), filtros.getCurvaA(), filtros.getCurvaB()));
 
+                        view.setGR1_MES01(rs.getInt("gr1_mes01"));
+                        view.setGR1_MES02(rs.getInt("gr1_mes02"));
+                        view.setGR1_MES03(rs.getInt("gr1_mes03"));
+                        view.setGR1_MES04(rs.getInt("gr1_mes04"));
+                        view.setGR1_MES05(rs.getInt("gr1_mes05"));
+                        view.setGR1_MES06(rs.getInt("gr1_mes06"));
+                        view.setGR1_MES07(rs.getInt("gr1_mes07"));
+                        view.setGR1_MES08(rs.getInt("gr1_mes08"));
+                        view.setGR1_MES09(rs.getInt("gr1_mes09"));
+                        view.setGR1_MES10(rs.getInt("gr1_mes10"));
+                        view.setGR1_MES11(rs.getInt("gr1_mes11"));
+                        view.setGR1_MES12(rs.getInt("gr1_mes12"));
+                        view.setGR1_MES13(rs.getInt("gr1_mes13"));
+                        view.setGERAL_MES01(rs.getFloat("GERAL_MES01"));
+                        view.setGERAL_MES02(rs.getFloat("GERAL_MES02"));
+                        view.setGERAL_MES03(rs.getFloat("GERAL_MES03"));
+                        view.setGERAL_MES04(rs.getFloat("GERAL_MES04"));
+                        view.setGERAL_MES05(rs.getFloat("GERAL_MES05"));
+                        view.setGERAL_MES06(rs.getFloat("GERAL_MES06"));
+                        view.setGERAL_MES07(rs.getFloat("GERAL_MES07"));
+                        view.setGERAL_MES08(rs.getFloat("GERAL_MES08"));
+                        view.setGERAL_MES09(rs.getFloat("GERAL_MES09"));
+                        view.setGERAL_MES10(rs.getFloat("GERAL_MES10"));
+                        view.setGERAL_MES11(rs.getFloat("GERAL_MES11"));
+                        view.setGERAL_MES12(rs.getFloat("GERAL_MES12"));
+                        view.setGERAL_MES13(rs.getFloat("GERAL_MES13"));
+                        view.setVENDIDO_GERAL(rs.getFloat("VENDIDO_GERAL"));
+                        view.setVENDIDO_GR1(rs.getFloat("VENDIDO_GR1"));
+
+                        if (filtros.getAgrupamento() == 9) {
+                            System.out.println("aaaaaaaaaaaaaaa");
+                            System.out.println(calculaMargem(view.getVENDIDO(), view.getCMV()));
+                            view.setMargem(calculaMargem(view.getVENDIDO(), view.getCMV()));
+                        }
                         views.add(view);
                         break;
 
@@ -603,6 +901,7 @@ public class ViewDAO {
                         view.setCURVAGERAL(calc.calculoAbc(rs.getInt("acu_gr1"), rs.getFloat("part_gr1"), rs.getFloat("acu_gr1"), filtros.getCurvaA(), filtros.getCurvaB()));
 
                         views.add(view);
+
                         break;
                 }
             }
@@ -610,9 +909,19 @@ public class ViewDAO {
         } catch (SQLException ex) {
             Logger.getLogger(ViewDAO.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
-            ConnectionFactory.closeConnection(con, stmt, rs);
+            ConnectionFactory.closeConnection(connection, stmt, rs);
         }
 
         return views;
+    }
+
+    public static int calculaMargem(Float vendido, Float cmv) {
+
+        if (cmv == 0) {
+            cmv = 1f;
+        }
+
+        float retorno = vendido - cmv;
+        return (int) Math.round(retorno);
     }
 }
