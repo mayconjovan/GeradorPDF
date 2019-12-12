@@ -51,8 +51,6 @@ public class ViewDAO {
             return text;
         }
 
-        System.out.println("Chegou aqui");
-
         return " ";
 }
 
@@ -67,10 +65,12 @@ public class ViewDAO {
 
         text += "(";
 
-        if(table.equals("pedi_100") && campo.equals("codigo_empresa")){
-            if(filtrosParametros.getCodigoEmpresa() == 9999) {
+        if((table.equals("pedi_100") ||
+                table.equals("fatu_050")) && campo.equals("codigo_empresa")){
+            if(!(filtrosParametros.getCodigoEmpresa() == 9999)) {
                 text += filtrosParametros.getCodigoEmpresa();
                 text += ")";
+                System.out.println(text);
                 return text;
             }
 
@@ -225,11 +225,10 @@ public class ViewDAO {
                     + "                               \n"
                     + "                                          and pedi_100.tecido_peca        =  decode(" + filtros.getNivel() + "	,99,pedi_100.tecido_peca,1,'1',2,'2',4,'4',7,'7',9,'9')                                                   \n"
                     + "                                          and pedi_080.faturamento        <> decode(" + filtros.getFaturamento() + "	,0,0,1,2,2,1)                                                                                       \n"
-                    + "                                          and pedi_110.cod_cancelamento <  decode('" + filtros.getConsideraCancelados() + "','S', 1000,'N',1) \n"
-                    +
+                    + "                                          and pedi_110.cod_cancelamento <  decode('" + filtros.getConsideraCancelados() + "','S', 1000,'N',1) \n" +
                     "" + retornaCondicaoSQL("pedi_100", "codigo_empresa", filtros.getWidgetArtigoProdutos(), false) +
                     "" + retornaCondicaoSQL("pedi_100", "cod_rep_cliente", filtros.getWidgetRepresentante(), false) +
-                    "" + retornaCondicaoSQL("fatu_060", "grupo_estrutura", filtros.getWidgetProdutos(), true) +
+                    "" + retornaCondicaoSQL("pedi_110", "cd_it_pe_grupo", filtros.getWidgetProdutos(), true) +
                     "" + retornaCondicaoSQL("basi_030", "colecao", filtros.getWidgetColecao(), false) +
                     "" + retornaCondicaoSQL("basi_030", "linha_produto", filtros.getWidgetLinhaProduto(), false) +
                     "" + retornaCondicaoFatuOuPedi("pedi_100", "cli_ped_cgc_cli9", filtros.getWidgetCliente(), 0)  +
@@ -421,7 +420,7 @@ public class ViewDAO {
                     "                                          and pedi_080.faturamento       <> decode(" + filtros.getFaturamento() + ",0,0,1,2,2,1)                                                                                       \n" +
                     "                                          and fatu_060.cod_cancelamento <  decode('" + filtros.getConsideraCancelados() + "','S', 1000,'N',1) \n" +
                     "\n" +
-                    //"and (fatu_050.codigo_empresa   in (select REGEXP_SUBSTR(str, exp,1,level) lista from (select  * from '" + filtros.getMdi().codigo_empresa +"' str,     '[^,]+' exp  from dual)connect by REGEXP_SUBSTR(str, exp, 1, level) is not null) or '" + filtros.getCliente() + "' = '0000') \n" +
+                    "" + retornaCondicaoSQL("fatu_050", "codigo_empresa", filtros.getWidgetArtigoProdutos(), false) +
                     "" + retornaCondicaoSQL("pedi_020", "cod_rep_cliente", filtros.getWidgetRepresentante(), false) +
                     "" + retornaCondicaoSQL("fatu_060", "grupo_estrutura", filtros.getWidgetProdutos(), true) +
                     "" + retornaCondicaoSQL("basi_030", "colecao", filtros.getWidgetColecao(), false) +
