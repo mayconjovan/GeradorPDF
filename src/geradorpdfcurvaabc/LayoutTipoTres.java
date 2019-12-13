@@ -28,8 +28,8 @@ public class LayoutTipoTres extends PdfPageEventHelper implements EstruturaPDF {
 
     @Override
     public void body(Document document, final List<ConstrutorView> agrupamentos) {
-        PdfPTable tabela = new PdfPTable(new float[]{7f, 68f, 13f, 15f, 15f, 15f,
-                15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 13.7f, 18.3f, 15f,
+        PdfPTable tabela = new PdfPTable(new float[]{7f, 68f, 15f, 15f, 15f, 15f,
+                15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f, 13.7f, 16f, 18f,
                 15f, 12f, 6f});
         tabela.setWidthPercentage(100);
         List<String> arrAgrupamento1 = new ArrayList<String>();
@@ -245,19 +245,22 @@ public class LayoutTipoTres extends PdfPageEventHelper implements EstruturaPDF {
                     somaGeral(arrTotaisCurva, obj.MES13, 12);
                     break;
                 case 16:
-                    phrase = new Paragraph(new Phrase("" + (int) obj.VENDIDO + "", Fontes.getHeaderTableDefaultBold()));
+                    phrase = new Paragraph(new Phrase("" + (int) obj.MEDIA + "", Fontes.getHeaderTableDefaultBold()));
                     cell.addElement(phrase);
                     cell.setPaddingRight(1);
                     cell.setHorizontalAlignment(1);
                     break;
                 case 17:
-                    phrase = new Paragraph(new Phrase("(" + MetodosUtils.formatarFloat(obj.CMV) + ")", Fontes.getHeaderTableDefaultBold()));
+                    /*
+                        campo fat_liq
+                     */
+                    phrase = new Paragraph(new Phrase("(" + obj.getFaturamentoLiquido() + ")", Fontes.getHeaderTableDefaultBold()));
                     cell.addElement(phrase);
                     cell.setPaddingRight(1);
                     cell.setHorizontalAlignment(1);
                     break;
                 case 18:
-                    phrase = new Paragraph(new Phrase("" + MetodosUtils.formatarFloat(obj.MEDIA) + "", Fontes.getHeaderTableDefaultBold()));
+                    phrase = new Paragraph(new Phrase("" + MetodosUtils.formatarFloat(obj.CMV) + "", Fontes.getHeaderTableDefaultBold()));
                     cell.addElement(phrase);
                     cell.setPaddingRight(1);
                     cell.setHorizontalAlignment(1);

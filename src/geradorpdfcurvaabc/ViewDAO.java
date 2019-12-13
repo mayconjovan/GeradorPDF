@@ -24,9 +24,7 @@ import java.util.logging.Logger;
 public class ViewDAO {
 
     private static FiltrosParametros filtrosParametros;
-    /*
 
-     */
     public static String retornaCondicaoFatuOuPedi(String table, String campo, TempFilter temp, int posicao) {
         String text = " and " + table + "." + campo + "";
         text += temp.incExc ? " not" : "";
@@ -105,7 +103,7 @@ public class ViewDAO {
         return text;
     }
 
-    public static List<ConstrutorView> buscarDados(FiltrosParametros filtros) {
+    public static List<ConstrutorView> buscarDados(FiltrosParametros filtros) throws SQLException {
 
         filtrosParametros = filtros;
         Connection connection = new AppConnection().getConnection();
@@ -816,9 +814,9 @@ public class ViewDAO {
                         view.setVENDIDO_GR1(rs.getFloat("VENDIDO_GR1"));
 
                         if (filtros.getAgrupamento() == 9) {
-                            System.out.println("aaaaaaaaaaaaaaa");
-                            System.out.println(calculaMargem(view.getVENDIDO(), view.getCMV()));
-                            view.setMargem(calculaMargem(view.getVENDIDO(), view.getCMV()));
+                            System.out.println(calculaFaturamentoLiquido(view.getVENDIDO(), view.getCMV()));
+                            view.setFaturamentoLiquido(calculaFaturamentoLiquido(view.getVENDIDO(), view.getCMV()));
+                            view.setMargem(calculaMargem(view.getFaturamentoLiquido(), view.getCMV()));
                         }
                         views.add(view);
                         break;
@@ -908,13 +906,13 @@ public class ViewDAO {
         } catch (SQLException ex) {
             Logger.getLogger(ViewDAO.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
-            ConnectionFactory.closeConnection(connection, stmt, rs);
+            connection.close();
         }
 
         return views;
     }
 
-    public static int calculaMargem(Float vendido, Float cmv) {
+    public static int calculaFaturamentoLiquido(Float vendido, Float cmv) {
 
         if (cmv == 0) {
             cmv = 1f;
@@ -922,5 +920,16 @@ public class ViewDAO {
 
         float retorno = vendido - cmv;
         return (int) Math.round(retorno);
+    }
+
+    public static int calculaMargem(Integer faturamento, Float cmv){
+        if(cmv == 0){
+            cmv = 1f;
+        }
+        if(faturamento == 0){
+            faturamento = 1;
+        }
+
+        return Math.round(faturamento + cmv);
     }
 }

@@ -451,7 +451,7 @@ public class MetodosUtils {
         ColumnText.showTextAligned(writer.getDirectContent(),
                 Paragraph.ALIGN_LEFT,
                 new Phrase("Layout: " + nomeDoArquivo, Fontes.getMinFontGray()), 10, 13, 0);
-        Image image = null;
+       /* Image image = null;
         try {
             image = Image.getInstance("C:\\Systextil\\App\\SystextilWeb\\imagens\\logosystextil.png");
             image.setAlignment(Paragraph.ALIGN_RIGHT);
@@ -460,7 +460,7 @@ public class MetodosUtils {
             writer.getDirectContent().addImage(image, true);
         } catch (DocumentException | IOException err) {
             err.printStackTrace();
-        }
+        }*/
     }
 
     public static String getNomeDoArquivo() {

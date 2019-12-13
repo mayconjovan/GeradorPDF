@@ -276,7 +276,7 @@ public class LayoutTipoDois extends PdfPageEventHelper implements EstruturaPDF {
                     cell.setHorizontalAlignment(1);
                     break;
                 case 16:
-                    phrase = new Paragraph(new Phrase("" + obj.PARTICIPACAO_GERAL + "", Fontes.getHeaderTableDefaultBold()));
+                    phrase = new Paragraph(new Phrase("" + MetodosUtils.formatarFloat(obj.PART_GR1) + "", Fontes.getHeaderTableDefaultBold()));
                     cell.addElement(phrase);
                     cell.setPaddingRight(1);
                     cell.setHorizontalAlignment(1);
@@ -288,7 +288,7 @@ public class LayoutTipoDois extends PdfPageEventHelper implements EstruturaPDF {
                     cell.setHorizontalAlignment(1);
                     break;
                 case 18:
-                    phrase = new Paragraph(new Phrase("" + obj.ACUM_PARTICIPACAO_GERAL + "", Fontes.getHeaderTableDefaultBold()));
+                    phrase = new Paragraph(new Phrase("" + MetodosUtils.formatarFloat(obj.ACU_GR1) + "", Fontes.getHeaderTableDefaultBold()));
                     cell.addElement(phrase);
                     cell.setPaddingRight(1);
                     cell.setHorizontalAlignment(1);
