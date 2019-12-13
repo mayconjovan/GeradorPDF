@@ -470,7 +470,6 @@ public class LayoutTipoTres extends PdfPageEventHelper implements EstruturaPDF {
         }
         MetodosUtils.getMeses(headers, filtrosParametros.getDataFinal());
 
-
         headers.add("MÉDIA");
         headers.add("FAT.LIQ.");
         headers.add("CUSTO");

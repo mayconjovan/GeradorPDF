@@ -184,11 +184,17 @@ public class LayoutTipoUm extends PdfPageEventHelper implements EstruturaPDF {
 
             switch (h) {
                 case 0:
+                    /*
+                       COLUNA DE  ORDEM
+                     */
                     phrase = new Paragraph(new Phrase("" + posicao + "", Fontes.getHeaderTableDefaultBold()));
                     phrase.setAlignment(Paragraph.ALIGN_RIGHT);
                     cell.addElement(phrase);
                     break;
                 case 1:
+                    /*
+                        Coluna de representantes
+                     */
                     phrase = new Paragraph(new Phrase("" + obj.AGRUPAMENTO_1 + " " + obj.DESCRICAO_AGRUPAMENTO1, Fontes.getHeaderTableDefaultBold()));
                     cell.addElement(phrase);
                     cell.setPaddingLeft(5);
@@ -272,6 +278,9 @@ public class LayoutTipoUm extends PdfPageEventHelper implements EstruturaPDF {
                     somaGeral(arrTotaisCurva, obj.MES13, 12);
                     break;
                 case 15:
+                    /*
+                        Coluna de valor
+                     */
                     phrase = new Paragraph(new Phrase("" + (int) obj.VENDIDO + "", Fontes.getHeaderTableDefaultBold()));
                     verificaNumeroRepresentantes(arrTotalNumeroClientes, (int) obj.VENDIDO, 13);
                     cell.addElement(phrase);
@@ -279,24 +288,36 @@ public class LayoutTipoUm extends PdfPageEventHelper implements EstruturaPDF {
                     cell.setHorizontalAlignment(1);
                     break;
                 case 16:
+                    /*
+                        Coluna de %
+                     */
                     phrase = new Paragraph(new Phrase("" + MetodosUtils.formatarFloat(obj.PARTICIPACAO_GERAL), Fontes.getHeaderTableDefaultBold()));
                     cell.addElement(phrase);
                     cell.setPaddingRight(1);
                     cell.setHorizontalAlignment(1);
                     break;
                 case 17:
+                    /*
+                        Coluna de média
+                     */
                     phrase = new Paragraph(new Phrase("" + MetodosUtils.formatarFloat(obj.MEDIA) + "", Fontes.getHeaderTableDefaultBold()));
                     cell.addElement(phrase);
                     cell.setPaddingRight(1);
                     cell.setHorizontalAlignment(1);
                     break;
                 case 18:
+                    /*
+                        Coluna de % acum
+                     */
                     phrase = new Paragraph(new Phrase("" + MetodosUtils.formatarFloat(obj.ACUM_PARTICIPACAO_GERAL) + "", Fontes.getHeaderTableDefaultBold()));
                     cell.addElement(phrase);
                     cell.setPaddingRight(1);
                     cell.setHorizontalAlignment(1);
                     break;
                 case 19:
+                    /*
+                        Coluna de abc
+                     */
                     phrase = new Paragraph(new Phrase(obj.CURVAGERAL, Fontes.getHeaderTableDefaultBold()));
                     cell.setPaddingLeft(4);
                     break;

@@ -19,7 +19,7 @@ public class pedi_e015 extends BaseThread {
     private static String nomeArquivo = null;
 
     @Override
-    protected void processarBatch() {
+    protected void processarBatch() throws NoDataException {
         /*
             Pegando dados da tabela oper_001
         */
@@ -58,7 +58,6 @@ public class pedi_e015 extends BaseThread {
                 codigoEmp, usuario, curvaC, linhaProduto, representante, cliente, estadoCliente, tipoCliente,
                 cidadeCliente, produtos, artigoProdutos, contaDeEstoque, colecao, empresaSelecionado);
 
-        System.out.println(parametros.getCodigoEmpresa());
 
         parametros.setWidgetRepresentante(tempMap.get("campo_72"));
         parametros.setWidgetColecao(tempMap.get("campo_71"));
@@ -75,8 +74,10 @@ public class pedi_e015 extends BaseThread {
             gerarPDF(parametros);
         } catch (IOException err) {
             err.printStackTrace();
-        }catch(SQLException err){
+        }catch(SQLException  err){
             err.printStackTrace();
+        }catch (NoDataException err){
+            throw new NoDataException();
         }
 
         try{
@@ -86,9 +87,12 @@ public class pedi_e015 extends BaseThread {
         }
     }
     
-    public static void gerarPDF(FiltrosParametros filtrosParametros) throws IOException, IOException, FileNotFoundException, SQLException {
+    public static void gerarPDF(FiltrosParametros filtrosParametros) throws IOException, IOException, FileNotFoundException, SQLException, NoDataException {
         List<ConstrutorView> agrupamentos = ViewDAO.buscarDados(filtrosParametros);
 
+        if(!(agrupamentos.size() > 0)){
+            throw new NoDataException();
+        }
         System.out.println(filtrosParametros.toString());
         if (agrupamentos.size() > 0) {
             Document doc;
