@@ -1,0 +1,823 @@
+package forms.pedi;
+
+import br.com.intersys.systextil.global.UtilStr;
+import br.com.intersys.systextil.global.TagException;
+import br.com.intersys.systextil.util.UtilDateTime;
+import br.com.intersys.systextil.function.ValidaEstado;
+import java.util.ArrayList;
+import systextil.msg.Msg;
+import systextil.msg.Tag;
+import systextil.bo.geradorpdfcurvaabc.FiltrosParametros;
+
+
+FORM pedi_e015 extends forms.systextil.controle_rpt
+{
+    
+    private pedi_e015 formId = this;
+
+    
+    //multi_valued NullableNumericVariable XXX
+    //multi_valued NullableStringVariable XXX
+    //multi_valued NullableDateVariable XXX
+    
+    public NullableNumeric 	cli9_cadastrado = 0 ;       // RCNB_060.GRUPO_ESTRUTURA
+    public NullableNumeric 	cli4_cadastrado = 0 ;       // RCNB_060.ITEM_ESTRUTURA
+    public NullableNumeric 	cli2_cadastrado = 0 ;       // RCNB_060.NIVEL_ESTRUTURA
+    public NullableString 	descricao1 = "" ;       // RCNB_060.DESCRICAO1
+    public NullableNumeric 	existe_conta = 0 ;       // RCNB_060.GRUPO_ESTRUTURA
+    public NullableNumeric 	existe_artigo = 0 ;       // RCNB_060.GRUPO_ESTRUTURA
+    public NullableNumeric 	cidade_reg = 0 ;       // RCNB_060.ITEM_ESTRUTURA
+    public NullableString 	estado = "" ;       // RCNB_060.GRUPO_ESTRUTURA_STR
+    public NullableNumeric 	existe_colecao = 0 ;       // RCNB_060.GRUPO_ESTRUTURA
+    public NullableNumeric 	pedido = 0 ;       // PEDI_100.PEDIDO_VENDA
+    public NullableNumeric 	cgc9 = 0 ;       // PEDI_100.CLI_PED_CGC_CLI9
+    public NullableNumeric 	cgc4 = 0 ;       // PEDI_100.CLI_PED_CGC_CLI4
+    public NullableNumeric 	cgc2 = 0 ;       // PEDI_100.CLI_PED_CGC_CLI2
+    public NullableNumeric 	cod_rep = 0 ;       // PEDI_100.COD_REP_CLIENTE
+    public NullableDate 	data_embarque = null ;       // PEDI_100.DATA_ENTR_VENDA
+    public NullableNumeric 	natu_oper = 0 ;       // PEDI_100.NATOP_PV_NAT_OPER
+    public NullableString 	est_oper = "" ;       // PEDI_100.NATOP_PV_EST_OPER
+    public NullableAmount 	desc1 = null ;       // PEDI_100.DESCONTO1
+    public NullableAmount 	desc2 = null ;       // PEDI_100.DESCONTO2
+    public NullableAmount 	desc3 = null ;       // PEDI_100.DESCONTO3
+    public NullableNumeric 	representante_temp = 0 ;       // RCNB_060.GRUPO_ESTRUTURA
+    public NullableNumeric 	cli_cgc9 = 0 ;       // RCNB_060.GRUPO_ESTRUTURA
+    public NullableNumeric 	cli_cgc4 = 0 ;       // RCNB_060.ITEM_ESTRUTURA
+    public NullableNumeric 	cli_cgc2 = 0 ;       // RCNB_060.NIVEL_ESTRUTURA
+    public NullableNumeric 	faturamento = 0 ;       // PEDI_080.FATURAMENTO
+    public NullableAmount 	perc_icms = null ;       // PEDI_080.PERC_ICMS
+    public NullableFloat 	perc_reducao_icm = 0.0 ;       // PEDI_080.PERC_REDUCAO_ICM
+    public NullableString 	nome_rep = "" ;       // PEDI_020.NOME_REP_CLIENTE
+    public NullableAmount 	perc_pis = null ;       // PEDI_080.PERC_PIS
+    public NullableAmount 	perc_cofins = null ;       // PEDI_080.PERC_COFINS
+    public NullableString 	nome_cliente = "" ;       // PEDI_010.NOME_CLIENTE
+    public NullableString 	nivel = "" ;       // PEDI_110.CD_IT_PE_NIVEL99
+    public NullableString 	grupo = "" ;       // PEDI_110.CD_IT_PE_GRUPO
+    public NullableFloat 	qtde_pedida = 0.0 ;       // PEDI_110.QTDE_PEDIDA
+    public NullableFloat 	qtde_faturada = 0.0 ;       // PEDI_110.QTDE_FATURADA
+    public NullableNumeric 	canc110 = 0 ;       // PEDI_110.COD_CANCELAMENTO
+    public NullableFloat 	valuni = 0.0 ;       // PEDI_110.VALOR_UNITARIO
+    public NullableAmount 	perc_desc_item = null ;       // PEDI_110.PERCENTUAL_DESC
+    public NullableString 	subgrupo = "" ;       // PEDI_110.CD_IT_PE_SUBGRUPO
+    public NullableString 	item = "" ;       // PEDI_110.CD_IT_PE_ITEM
+    public NullableNumeric 	col1 = 0 ;       // BASI_030.COLECAO
+    public NullableNumeric 	lin1 = 0 ;       // BASI_030.LINHA_PRODUTO
+    public NullableString 	descr_ref = "" ;       // BASI_030.DESCR_REFERENCIA
+    public NullableNumeric 	colecao_temp = 0 ;       // RCNB_060.GRUPO_ESTRUTURA
+    public NullableNumeric 	linha_temp = 0 ;       // RCNB_060.GRUPO_ESTRUTURA
+    public NullableFloat 	preco_custo = 0.0 ;       // BASI_010.PRECO_CUSTO
+    public NullableFloat 	preco_custo_info = 0.0 ;       // BASI_010.PRECO_CUSTO_INFO
+    public NullableFloat 	tot_mes = 0.0 ;       // OPER_TMP.FLO_01
+    public NullableNumeric 	nota = 0 ;       // FATU_050.NUM_NOTA_FISCAL
+    public NullableDate 	data_emissao = null ;       // FATU_050.DATA_EMISSAO
+    public NullableNumeric 	empr_nota = 0 ;       // FATU_050.CODIGO_EMPRESA
+    public NullableString 	serie_nota = "" ;       // FATU_050.SERIE_NOTA_FISC
+    public NullableFloat 	total_geral_temp = 0.0 ;       // OPER_TMP.FLO_13
+    public NullableFloat 	total_temp = 0.0 ;       // OPER_TMP.FLO_13
+    public NullableFloat 	linha_a_temp = 0.0 ;       // OPER_TMP.FLO_15
+    public NullableFloat 	linha_b_temp = 0.0 ;       // OPER_TMP.FLO_16
+    public NullableFloat 	linha_c_temp = 0.0 ;       // OPER_TMP.FLO_17
+    public NullableNumeric 	sequecia_temp = 0 ;       // OPER_TMP.SEQUENCIA
+    public NullableNumeric 	repr_temp = 0 ;       // OPER_TMP.INT_03
+   // public NullableFloat 	total_geral_temp = 0.0 ;       // OPER_TMP.FLO_13
+    public NullableNumeric 	cnpj9_temp = 0 ;       // OPER_TMP.INT_13
+    public NullableNumeric 	cnpj4_temp = 0 ;       // OPER_TMP.INT_14
+    public NullableNumeric 	cnpj2_temp = 0 ;       // OPER_TMP.INT_15
+    public NullableFloat 	quant_tot_temp = 0.0 ;       // OPER_TMP.FLO_20
+    public NullableString 	nivel_temp = "" ;       // OPER_TMP.STR_01
+    public NullableString 	grupo_temp = "" ;       // OPER_TMP.STR_02
+    public NullableFloat 	qtde_temp_prod = 0.0 ;       // OPER_TMP.FLO_01
+    public NullableFloat 	valor_temp_prod = 0.0 ;       // OPER_TMP.FLO_47
+    public NullableFloat 	preco_custo_temp = 0.0 ;       // OPER_TMP.FLO_19
+    public NullableFloat 	preco_custo_info_temp = 0.0 ;       // OPER_TMP.FLO_18
+    public NullableFloat 	perc_pis_temp = 0.0 ;       // OPER_TMP.FLO_14
+    public NullableFloat 	perc_cofins_temp = 0.0 ;       // OPER_TMP.FLO_45
+    public NullableFloat 	perc_icms_temp = 0.0 ;       // OPER_TMP.FLO_46
+    public NullableFloat 	reducao_icms_temp = 0.0 ;       // OPER_TMP.FLO_50
+    public NullableDate 	data_formatada = null;
+    public NullableNumeric 	mes_par = 1;
+    public NullableNumeric 	dia_par = 0;
+    public NullableNumeric 	ano_par = 0;
+    public NullableString 	rpt_015_aa = "pe_o015_ai.rpt";
+    public NullableNumeric 	mes_ini_tmp = 1;
+    public NullableNumeric 	mes_fim_tmp = 1;
+    public NullableString 	first_field = "nome_relato";
+    public NullableDate 	data_periodo2_aux = null;
+    public NullableDate 	data_periodo1 = null;
+    public NullableDate 	data_periodo2 = null;
+    public NullableNumeric 	mes_ini,dia_ini,ano_ini;
+    public NullableNumeric 	mes_fim,dia_fim,ano_fim;
+    public NullableNumeric 	nr_solicitacao;
+    public NullableNumeric 	sequencia;
+    public NullableDate		data_solicitacao;
+    public NullableString 	fyi_message = null;
+    public NullableNumeric 	meses = 0;
+    public NullableNumeric 	repre_cadastrado = null;
+    public NullableNumeric 	tp_cliente = 0;
+
+    /* public xxxINDEF 	ano_par = null;
+    public xxxINDEF 	data_corrente = null;
+    public xxxINDEF 	auto_commit = null;
+    public xxxINDEF 	auto_find = null;
+    public xxxINDEF 	aud_on_entry = null;
+    public xxxINDEF 	auto_zoom = null;
+    public xxxINDEF 	auto_zoom = null;
+    public xxxINDEF 	auto_zoom = null;
+    public xxxINDEF 	auto_zoom = null;
+    public xxxINDEF 	auto_zoom = null;
+    public xxxINDEF 	auto_zoom = null;
+    public xxxINDEF 	auto_zoom = null;
+    public xxxINDEF 	auto_zoom = null;
+   
+    public xxxINDEF 	meses = null;
+    public xxxINDEF 	fyi_message = null;
+    public xxxINDEF 	fyi_message = null;
+    public xxxINDEF 	fyi_message = null;
+    public xxxINDEF 	fyi_message = null;
+    public xxxBANCO 	repre_cadastrado = null;
+    public xxxINDEF 	auto_zoom = null;
+    public xxxINDEF 	auto_zoom = null;
+ 
+    public xxxINDEF 	ano_ini_tmp = null;
+    public xxxINDEF 	ano_fim_tmp = null;*/
+    
+    public NullableDate ultimo_dia_mes(NullableDate data_par)
+    {
+        data_formatada.setNull();
+        
+        if (!data_par == null) {
+            //date_to_mdy$(data_par,mes_par,dia_par,ano_par);
+            
+            mes_par = mes_par + 1;
+            
+            if ( mes_par == 13) {
+                ano_par = ano_par + 1;
+                mes_par = 1;
+            }
+            
+            //data_formatada = mdy_ (mes_par,1,ano_par) - 1;
+        }
+        
+        return(data_formatada);
+        
+        
+    }
+    
+    
+    BEFORE FORM
+    {
+        super.beforeForm();
+       
+       /* versao_systextil5 = 22;
+        auto_commit = true;    
+        data_corrente = session.currentDate;
+        
+        
+        if ( prev_form == "oper_f010") {
+            nr_solicitacao.clearFindExp = oper_f010:nr_solicitacao;
+            formId.autoFind = true;
+            formId.firstField = "nome_relato";
+            nome_relato.required = true;
+        }
+        else {
+            formId.startInAddMode = true;
+            nome_relato.required = false;
+        }
+        
+        codigo_empresa.clearFindExp = mdi.codigo_empresa;
+        codigo_empresa.clearAddExp = mdi.codigo_empresa;*/
+        
+        
+
+        
+       
+        
+        
+    }
+
+    ON CLEAR TO ADD
+    {
+        super.onClearToAdd();
+        
+        data_solicitacao = session.currentDate;
+        sequencia = 0;
+        
+        //date_to_mdy$ (session.currentDate,mes_ini,dia_ini,ano_ini);
+        //date_to_mdy$ (session.currentDate,mes_fim,dia_fim,ano_fim);
+        
+        campo_31 = 9999;
+        campo_20 = 1;
+      
+        
+        campo_03 = 12;
+        campo_04 = ano_fim;
+        campo_91 = "99";
+        campo_32 = 0;
+        campo_05 = 1;
+        campo_71 = 2;
+        campo_23 = 2;
+        campo_72 = 2;
+        campo_74 = 2;
+        campo_15 = "N";
+        campo_16 = "S";
+        campo_45 = 1;
+        campo_07 = 0.000;
+        campo_08 = 0.000;
+        campo_09 = 0.000;
+        campo_75 = 2;
+        campo_76 = 2;
+        campo_77 = 2;
+        campo_78 = 2;
+        campo_79 = 2;
+        campo_130 = 2;
+        campo_86 = 999.99;
+        campo_88 = 999.99;
+        campo_107 = 1;
+        
+        do {
+            
+            EXEC SQL
+            delete from oper_tmp
+            where oper_tmp.nr_solicitacao = :nr_solicitacao
+            and oper_tmp.nome_relatorio = 'pedi_e015'
+            and oper_tmp.int_01 = :mdi.codigo_usuario;
+        } while (!(session.status > -43 || session.status < -45));
+        
+        if ( session.status != -35 && session.status != 0) {
+            
+        // comentario# ATENÃ‡ÃƒO! NÃ£o eliminou OPER_TMP (1).Status: {0} #comentario
+            session.displayToMessageBox( utilTag.buscarTagComposta("ds00188" ,  ""+session.status , "" , "" , "" , "" , "" , "" , "" , "" , "" ) );
+            //session.displayToMessageBox( sql_errmsg$() );
+        }
+        formId.commitTransaction();
+    
+        do {
+            EXEC SQL
+            delete rcnb_060
+            where rcnb_060.tipo_registro in (60,79,131,112,750,964,377,551,201,38)
+            and rcnb_060.nr_solicitacao = 015
+            and rcnb_060.subgru_estrutura = :mdi.codigo_usuario;
+        } while(!(session.status > -43 || session.status < -45));
+        
+        if ( session.status != 0 && session.status != -35) {
+            
+        // comentario# ATENÃ‡ÃƒO! NÃ£o eliminou cadastros temporÃ¡rios (1). Status: {0} . #comentario
+            session.displayToMessageBox( utilTag.buscarTagComposta("ds01634" ,  ""+session.status , "" , "" , "" , "" , "" , "" , "" , "" , "" ) );
+            //session.displayToMessageBox( sql_errmsg$() );
+        }
+        formId.commitTransaction();
+        
+    }
+    
+    
+    AFTER ADD
+    {
+        super.afterAdd();
+        if ( session.status == 0 && formId.isCurrentRecordStored()) { session.queueCommand(PREVIOUS_FORM); return; }
+        
+        
+    }
+    
+    
+    ON PREVIOUS FORM
+    {
+        super.onPreviousForm();
+        do {
+            
+            EXEC SQL
+            delete from oper_tmp
+            where oper_tmp.nr_solicitacao = :nr_solicitacao
+            and oper_tmp.nome_relatorio = 'pedi_e015'
+            and oper_tmp.int_01 = :mdi.codigo_usuario;
+        } while (!(session.status > -43 || session.status < -45)) ;
+        
+        if ( session.status != -35 && session.status != 0) {
+            
+        // comentario# ATENÃ‡ÃƒO! NÃ£o eliminou OPER_TMP (2).Status: {0} #comentario
+            session.displayToMessageBox( utilTag.buscarTagComposta("ds00197" ,  ""+session.status , "" , "" , "" , "" , "" , "" , "" , "" , "" ) );
+            //session.displayToMessageBox( sql_errmsg$() );
+        }
+        formId.commitTransaction();
+        
+        do {
+            
+            EXEC SQL
+            delete rcnb_060
+            where rcnb_060.tipo_registro in (60,79,131,112,750,964,377,551,201,38)
+            and rcnb_060.nr_solicitacao = 015
+            and rcnb_060.subgru_estrutura = :mdi.codigo_usuario;
+        } while (!(session.status > -43 || session.status < -45));
+        
+        if ( session.status != 0 && session.status != -35) {
+            
+        // comentario# ATENÃ‡ÃƒO! NÃ£o eliminou cadastros temporÃ¡rios (2). Status: {0} . #comentario
+            session.displayToMessageBox( utilTag.buscarTagComposta("ds01635" ,  ""+session.status , "" , "" , "" , "" , "" , "" , "" , "" , "" ) );
+            //session.displayToMessageBox( sql_errmsg$() );
+        }
+        
+    }
+    
+    
+   
+    
+    BEFORE ADD
+    {
+        super.beforeAdd();
+        /*FiltrosParametros filtros = new FiltrosParametros((int) campo_20,(int) campo_45,(int) campo_05,
+                                    (int) campo_107, (int) campo_32, (int) campo_91, campo_15.toString(), (float) campo_86, (float) campo_88,
+                                    (float) campo_07, (float) campo_08,(int) campo_03, (int) campo_04, (Mdi) mdi);*/
+
+        
+    }
+
+    FIELD campo_77 extends incexc.Referencias
+    {
+    
+    }
+
+    FIELD campo_45 extends objetos.dropDownIntBase
+    {
+    
+        INIT FIELD
+        {
+        
+            ArrayList lista = new ArrayList();
+            
+            lista.add(new NameValuePair("01 - Por representante", "1"));
+            lista.add(new NameValuePair("02 - Por representante/cliente", "2"));
+            lista.add(new NameValuePair("03 - Por produto/representante", "3"));
+            lista.add(new NameValuePair("04 - Por cliente", "4"));
+            lista.add(new NameValuePair("05 - Por produto/cliente", "5"));
+            lista.add(new NameValuePair("06 - Por representante/produto", "6"));
+            lista.add(new NameValuePair("07 - Por cliente/produto", "7"));
+            lista.add(new NameValuePair("08 - Por produto", "8"));
+            lista.add(new NameValuePair("09 - Por produto/margem", "9"));	
+            lista.add(new NameValuePair("10 - Por produto/narrativa", "10"));
+            campo_45.setOptions(lista);
+        
+           
+        }
+    }
+    
+    FIELD campo_79 extends incexc.ContaEstoque
+    {
+    
+    }
+
+    FIELD campo_75 extends incexc.TipoClientes
+    {
+    
+    }
+
+    FIELD campo_23 extends incexc.ProdutoLinhas
+    {
+    
+    }
+
+    FIELD campo_78 extends incexc.ProdutoArtigos
+    {
+       
+    }
+
+    FIELD campo_76 extends incexc.Cidades
+    {
+    
+    }
+
+    FIELD campo_130 extends incexc.Estados
+    {
+    
+    }
+
+    FIELD campo_72 extends incexc.Representantes
+    {
+    
+    }
+
+    FIELD campo_71 extends incexc.Colecoes
+    {
+     protected void validar() throws Exception {
+                
+                if ( campo_71 != 1 && campo_71 != 2) {
+                    
+                    // comentario# ATENÃ‡ÃƒO! OpÃ§Ã£o invÃ¡lida. #comentario
+                    throw Msg.fromTag("ds00003");
+                }
+                
+                
+            }
+    }
+
+    FIELD campo_74 extends incexc.Clientes
+    {
+    
+    }
+
+    FIELD campo_88 extends valid.FloatText
+    {
+        
+        protected void validar() throws Exception {
+            
+            valida_float(this);
+            
+            
+        }
+    }
+    
+    
+    FIELD campo_86 extends valid.FloatText
+    {
+        
+        protected void validar() throws Exception {
+            
+            valida_float(this);
+            
+        }
+    }
+    
+    
+    FIELD campo_107 extends valid.NumericText
+    {
+        
+        protected void validar() throws Exception {
+            if ( campo_107 != 1 && campo_107 != 2) {
+                
+                // comentario# ATENÃ‡ÃƒO! OpÃ§Ã£o InvÃ¡lida. #comentario
+                throw Msg.fromTag("ds00070");
+            }
+            
+            
+        }
+    }
+    
+    FIELD campo_16 extends valid.StringText
+    {
+        
+        protected void validar() throws Exception {
+            if ( campo_16 != "S" && campo_16 != "N") {
+                
+                // comentario# ATENÃ‡ÃƒO! OpÃ§Ã£o invÃ¡lida. #comentario
+                throw Msg.fromTag("ds00003");
+            }
+            
+            
+        }
+    }
+    
+    
+        FIELD descr_qtde extends valid.StringText
+        {
+        }
+        
+        
+        FIELD campo_15 extends valid.StringText
+        {
+            
+            protected void validar() throws Exception {
+                if ( campo_15 != "S" && campo_15 != "N") {
+                    
+                    throw Msg.fromTag("ds00003# ATENÃ‡ÃƒO! OpÃ§Ã£o invÃ¡lida.");
+                }
+                
+                
+            }
+        }
+        
+        
+        FIELD campo_05 extends valid.NumericText
+        {
+            
+            protected void validar() throws Exception {
+                if ( campo_05 != 1 && campo_05 != 2) {
+                    
+                    // comentario# ATENÃ‡ÃƒO! OpÃ§Ã£o invÃ¡lida. #comentario
+                    throw Msg.fromTag("ds00003");
+                }
+                else {
+                    if ( campo_05 == 1 ) descr_qtde = utilTag.buscarTag("lb13187#2QUANTIDADE");
+                    if ( campo_05 == 2 ) descr_qtde = utilTag.buscarTag("lb08053#2VALOR");
+                }
+                
+                
+            }
+            
+            WHEN VALUE CHANGES
+            {
+                if ( campo_05 == 1 ) descr_qtde = utilTag.buscarTag("lb13187#2QUANTIDADE");
+                if ( campo_05 == 2 ) descr_qtde = utilTag.buscarTag("lb08053#2VALOR");
+                
+                
+            }
+            
+        }
+        
+        
+        FIELD campo_09 extends valid.FloatText
+        {
+            
+            protected void validar() throws Exception {
+                
+                valida_float(this);
+                if ( campo_09 <= campo_08) {
+                    
+                    // comentario# ATENÃ‡ÃƒO! Curva C deve ser maior que Curva B. #comentario
+                    throw Msg.fromTag("ds05703");
+                }
+                
+                
+            }
+        }
+        
+        
+        FIELD campo_08 extends valid.FloatText
+        {
+            
+            protected void validar() throws Exception {
+                
+                valida_float(this);
+                if ( campo_08 <= campo_07) {
+                    
+                    // comentario# ATENÃ‡ÃƒO! Curva B deve ser maior que Curva A. #comentario
+                    throw Msg.fromTag("ds05704");
+                }
+                
+                
+            }
+        }
+        
+        
+        FIELD campo_07 extends valid.FloatText
+        {
+            
+            protected void validar() throws Exception {
+                
+                valida_float(this);
+     
+            }
+        }
+        
+        
+        FIELD campo_04 extends valid.NumericText
+        {
+            
+            protected void validar() throws Exception {
+                if ( campo_04 < 1900) {
+                    
+                    // comentario# ATENÃ‡ÃƒO! Informe um ano vÃ¡lido. #comentario
+                    throw Msg.fromTag("ds03716");
+                }
+                else {
+                    //data_periodo1 = mdy_ (campo_01,01,campo_02);
+                    //data_periodo2 = mdy_ (campo_03,01,campo_04);
+                    if ( data_periodo1 > data_periodo2) {
+                        
+                        // comentario# ATENÃ‡ÃƒO! MÃªs/Ano inicial nÃ£o pode ser maior que MÃªs/Ano final. #comentario
+                        session.displayToMessageBox( utilTag.buscarTag("ds05707") );
+                        curNextField = "campo_01";
+                    }
+                    
+                    //data_periodo2_aux = mdy_ (campo_03,01,campo_04);
+                    data_periodo2_aux = ultimo_dia_mes(data_periodo2_aux);
+                    
+                   // meses = datetime_diff$(data_periodo1,data_periodo2_aux + 1,"month");
+                    
+                    if ( meses > 13) {
+                        
+                        session.displayToMessageBox( utilTag.buscarTag("ds27663# ATENÃ‡ÃƒO! O perÃ­odo nÃ£o pode ultrapassar 13 meses.") );
+                        curNextField = "campo_01";
+                    }
+                    
+                    if ( meses == 13) {
+                        
+                        campo_45 = 1;
+                        campo_45.setStippled(true);        
+                        
+                        session.displayToMessageBox( utilTag.buscarTag("ds27664# ATENÃ‡ÃƒO! Quando o perÃ­odo for de 13 meses sÃ³ Ã© permitida a opÃ§Ã£o de relatÃ³rio Por Representante.") );
+                    }
+                    else {
+                        campo_45.setStippled(false);
+                        
+                    }
+                }
+                
+                
+            }
+            
+            BEFORE FIELD
+            {
+            
+                if ( campo_20 == 1) fyi_message = utilTag.buscarTag("lb25519#2Informe; o ano final da data de embarque do pedido.");
+                if ( campo_20 == 2) fyi_message = utilTag.buscarTag("lb25520#2Informe; o ano final da data de emissÃ£o da nota fiscal.");
+                
+                
+            }
+            
+        }
+        
+        
+        FIELD campo_03 extends valid.NumericText
+        {
+            
+            protected void validar() throws Exception {
+                
+                if ( campo_03 < 1 || campo_03 > 12) {
+                    
+                    // comentario# ATENÃ‡ÃƒO! Informe um mÃªs vÃ¡lido. #comentario
+                    throw Msg.fromTag("ds02323");
+                }
+                
+                
+            }
+            
+            BEFORE FIELD
+            {
+                if ( campo_20 == 1) fyi_message = utilTag.buscarTag("lb25521#2Informe; o mÃªs final da data de embarque do pedido.");
+                if ( campo_20 == 2) fyi_message = utilTag.buscarTag("lb25522#2Informe; o mÃªs final da data de emissÃ£o da nota fiscal.");
+            }
+            
+        }
+        
+        
+        /*FIELD campo_71x extends valid.NumericText
+        {
+            
+            protected void validar() throws Exception {
+                
+                if ( campo_71 != 1 && campo_71 != 2) {
+                    
+                    // comentario# ATENÃ‡ÃƒO! OpÃ§Ã£o invÃ¡lida. #comentario
+                    throw Msg.fromTag("ds00003");
+                }
+                
+                
+            }
+        }*/
+        
+        
+        FIELD descr_tipo_fatur extends valid.StringText
+        {
+        }
+        
+        
+        FIELD campo_32 extends valid.NumericText
+        {
+            
+            protected void validar() throws Exception {
+                if ( campo_32 != 0 && campo_32 != 1 && campo_32 != 2) {
+                    
+                    // comentario# ATENÃ‡ÃƒO! OpÃ§Ã£o invÃ¡lida. #comentario
+                    throw Msg.fromTag("ds00003");
+                }
+                else {
+                    if ( campo_32 == 0 ) descr_tipo_fatur = utilTag.buscarTag("lb19427#2AMBOS");
+                    if ( campo_32 == 1 ) descr_tipo_fatur = utilTag.buscarTag("lb03743#2FATURAMENTO");
+                    if ( campo_32 == 2 ) descr_tipo_fatur = utilTag.buscarTag("lb07656#2OUTROS");
+                }
+                
+                
+            }
+            
+            WHEN VALUE CHANGES
+            {
+                if ( campo_32 == 0 ) descr_tipo_fatur = utilTag.buscarTag("lb19427#2AMBOS");
+                if ( campo_32 == 1 ) descr_tipo_fatur = utilTag.buscarTag("lb03743#2FATURAMENTO");
+                if ( campo_32 == 2 ) descr_tipo_fatur = utilTag.buscarTag("lb07656#2OUTROS");
+                
+                
+            }
+            
+        }
+        
+        
+        FIELD descr_empresa extends valid.StringText
+        {
+        }
+        
+        
+        FIELD campo_31 extends valid.NumericText
+        {
+            
+            protected void validar() throws Exception {
+                if ( campo_31 != 9999) {
+                    
+                    EXEC SQL
+                    select fatu_500.nome_empresa from fatu_500
+                    where fatu_500.codigo_empresa = :campo_31
+                    INTO descr_empresa ;
+                    if ( session.status != 0) {
+                        
+                        // comentario# ATENÃ‡ÃƒO! Empresa nÃ£o cadastrada. #comentario
+                        throw Msg.fromTag("ds00025");
+                    }
+                }
+                else descr_empresa = utilTag.buscarTag("lb17636#2TODAS; AS EMPRESAS");
+                
+                
+            }
+            
+            INIT FIELD
+            {
+                this.autoZoom = true;
+                this.zoomEnabled = true;
+                this.zoomFormName = "forms.oper.empr_f001";
+                this.zoomReturnValuesInto = campo_31;
+                
+                
+            }
+            
+            
+            WHEN VALUE CHANGES
+            {
+                if ( campo_31 != 9999) {
+                    
+                    EXEC SQL
+                    select fatu_500.nome_empresa from fatu_500
+                    where fatu_500.codigo_empresa = :campo_31
+                    INTO descr_empresa ;
+                }
+                else descr_empresa = utilTag.buscarTag("lb17636#2TODAS; AS EMPRESAS");
+                
+                
+            }
+            
+        }
+        
+        
+        FIELD descr_div_prod extends valid.StringText
+        {
+        }
+        
+        
+        FIELD campo_91 extends valid.StringText
+        {
+            
+            protected void validar() throws Exception {
+                if ( campo_91 != "1" && campo_91 != "2" && campo_91 != "4" &&
+                campo_91 != "7" && campo_91 != "9" && campo_91 != "99") {
+                    
+                    // comentario# ATENÃ‡ÃƒO! DivisÃ£o de produto invÃ¡lida. #comentario
+                    throw Msg.fromTag("ds00854");
+                }
+                else {
+                    if ( campo_91 == "1" ) descr_div_prod = utilTag.buscarTag("lb19484#2PECAS");
+                    if ( campo_91 == "2" ) descr_div_prod = utilTag.buscarTag("lb08037#2TECIDO; ACABADO");
+                    if ( campo_91 == "4" ) descr_div_prod = utilTag.buscarTag("lb25527#2MALHA; CRUA");
+                    if ( campo_91 == "7" ) descr_div_prod = utilTag.buscarTag("lb03767#2FIOS");
+                    if ( campo_91 == "9" ) descr_div_prod = utilTag.buscarTag("lb07656#2OUTROS");
+                    if ( campo_91 == "99" ) descr_div_prod = utilTag.buscarTag("lb17680#2TODOS");
+                }
+                
+                
+            }
+            
+            WHEN VALUE CHANGES
+            {
+                if ( campo_91 == "1" ) descr_div_prod = utilTag.buscarTag("lb19484#2PECAS");
+                if ( campo_91 == "2" ) descr_div_prod = utilTag.buscarTag("lb08037#2TECIDO; ACABADO");
+                if ( campo_91 == "4" ) descr_div_prod = utilTag.buscarTag("lb25527#2MALHA; CRUA");
+                if ( campo_91 == "7" ) descr_div_prod = utilTag.buscarTag("lb03767#2FIOS");
+                if ( campo_91 == "9" ) descr_div_prod = utilTag.buscarTag("lb07656#2OUTROS");
+                if ( campo_91 == "99" ) descr_div_prod = utilTag.buscarTag("lb17680#2TODOS");
+                
+                
+            }
+            
+        }
+        
+        
+        FIELD campo_20 extends valid.NumericText
+        {
+            
+            protected void validar() throws Exception {
+                if ( campo_20 != 1 && campo_20 != 2) {
+                    
+                    // comentario# ATENÃ‡ÃƒO! OpÃ§Ã£o invÃ¡lida #comentario
+                    throw Msg.fromTag("ds00179");
+                }
+                else {
+                    if ( campo_20 == 1 ) descr_venda = utilTag.buscarTag("lb08950#2VENDAS");
+                    if ( campo_20 == 2 ) descr_venda = utilTag.buscarTag("lb03743#2FATURAMENTO");
+                }
+                if ( campo_20 == 2) campo_15.stopForInput = false;
+                else campo_15.stopForInput = true;
+                
+                
+            }
+            
+            WHEN VALUE CHANGES
+            {
+                if ( campo_20 == 1 ) descr_venda = utilTag.buscarTag("lb08950#2VENDAS");
+                if ( campo_20 == 2 ) descr_venda = utilTag.buscarTag("lb03743#2FATURAMENTO");
+                
+                
+            }
+            
+        }
+        
+        
+        FIELD descr_venda extends valid.StringText
+        {
+        }
+        
+       
+    }
